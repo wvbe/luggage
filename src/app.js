@@ -3,8 +3,8 @@ require([
 ], function (
 	core
 	) {
-	function Application(element) {
-		core.Application.call(this, element);
+	function Application() {
+		core.Application.call(this);
 	}
 
 	Application.prototype = Object.create(core.Application.prototype);
@@ -13,7 +13,7 @@ require([
 	var app = new Application();
 	app.generateTilesOnUnsaturatedEdges(100);
 
-	app.world.renderer.render();
+	app.renderer.render();
 
 	window.app = app;
 });

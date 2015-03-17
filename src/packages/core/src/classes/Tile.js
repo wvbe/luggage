@@ -1,10 +1,10 @@
 define([], function() {
 
-	function Tile(x, y) {
+	function Tile(x, y, z) {
 		this.id = this.getIdForCoordinates(x, y);
 		this.x = x;
 		this.y = y;
-		this.z = 0;//.1 * Math.random(); // at sea level, not in use for now
+		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
 
 		this.bgColor = this.getFillRgb();
 		this.fgColor = this.bgColor.map(function (val) {
@@ -72,9 +72,12 @@ define([], function() {
 			: saturationThresholdOverride);
 	};
 
+	/**
+	 *
+	 * @param {Renderer} renderer
+	 */
 	Tile.prototype.render = function (renderer) {
 		renderer.setFillColor(this.bgColor);
-		//renderer.setStrokeColor(this.fgColor);
 		renderer.fillFlatPlane(
 			this.x,
 			this.y,

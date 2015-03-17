@@ -4,7 +4,7 @@ define([
 
 
 	// @TODO: Pannable viewport & shit
-	var TILE_SIZE = 24;
+	var TILE_SIZE = 32;
 
 	var ISOMETRIC_Y_TO_X_OFFSET = 0.3, // For every n on the Y axis, displace n*OFFSET to the right
 		ISOMETRIC_Y_TO_X_RATIO = 0.6,  // n on the Y axis is always this ratio of (horizontal) units
@@ -32,6 +32,9 @@ define([
 		this.canvas.width = newWidth;
 		this.canvas.height = newHeight;
 
+		//this.context.shadowColor = 'rgb(20, 41, 20)';
+		//this.context.shadowOffsetY = 6;
+
 		if(typeof this.render === 'function')
 			this.render();
 	};
@@ -39,27 +42,51 @@ define([
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	};
 
+
+
+	/**
+	 * Pan to pixel values
+	 * @param {Number} x
+	 * @param {Number} y
+	 */
 	Renderer.prototype.setOffset = function (x, y) {
 		this.offset = {
 			x: x,
 			y: y
 		}
 	};
+	/**
+	 * Pan to the position of a tile
+	 * @param {Number|Tile} x
+	 * @param {Number} [y]
+	 * @param {Number} [z]
+	 */
+	Renderer.prototype.panToTile = function (x, y, z) {
+		var coords = typeof x === 'object' && !!x
+			? this.pixelForCoordinates(x.x, x.y, x.z, true)
+			: this.pixelForCoordinates(x, y, z || 0, true);
+
+		this.setOffset(
+			-coords[0],
+			-coords[1]
+		)
+	};
 
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
 		return [
-			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width) + (x + ISOMETRIC_Y_TO_X_OFFSET * y) * TILE_SIZE,
+			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width)  + (x + ISOMETRIC_Y_TO_X_OFFSET * y)                         * TILE_SIZE,
 			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) - (y * ISOMETRIC_Y_TO_X_RATIO + z * ISOMETRIC_Z_TO_X_RATIO) * TILE_SIZE
 		];
 	};
 
 	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height) {
+		var spaceBetween = -0.01; // Slight overlap
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - width/2, y - height/2, z),
-			this.pixelForCoordinates(x + width/2, y - height/2, z),
-			this.pixelForCoordinates(x + width/2, y + height/2, z),
-			this.pixelForCoordinates(x - width/2, y + height/2, z)
+			this.pixelForCoordinates(x - width/2 + spaceBetween, y - height/2 + spaceBetween, z),
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z),
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z),
+			this.pixelForCoordinates(x - width/2 + spaceBetween, y + height/2 - spaceBetween, z)
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
@@ -80,6 +107,33 @@ define([
 	Renderer.prototype.setStrokeColor = function(color) {
 		this.context.strokeStyle = normalizeColorCode(color);
 	};
+	/**
+	 *
+	 */
+	Renderer.prototype.renderAllTiles = function (world) {
+		var renderer = this.renderer;
+
+		world.tiles.list()
+			.sort(furthestTilesFirst)
+			.forEach(function (tile) {
+				tile.render(renderer);
+			});
+	};
+
+	Renderer.prototype.renderAroundTile = function (world, tile, distance) {
+		world.getAreaAroundPosition(tile, distance)
+			.sort(furthestTilesFirst)
+			.forEach(function (tile) {
+				tile.render(this);
+			}.bind(this));
+	};
+
+	// Sort function, used to sort a list of tiles by their X/Y position towards the viewer's perspective.
+	function furthestTilesFirst (a, b) {
+		if(a.y === b.y)
+			return a.x < b.x ? -1 : 1;
+		return a.y < b.y ? 1 : -1;
+	}
 
 	function normalizeColorCode (color) {
 		if(Array.isArray(color))

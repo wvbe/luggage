@@ -16,30 +16,8 @@ define([
 			primaryKey: 'id'
 		});
 
-		// Function to get tiles in an order so that most-towards-camera comes last
-		this.tiles.listFromTopToBottom = function () {
-			return this.list().sort(function(a, b) {
-				if(a.y === b.y)
-					return a.x < b.x ? -1 : 1;
-				return a.y < b.y ? 1 : -1;
-			});
-		};
-		
-		this.tiles.listWithinManhattanDistance = function (center, distance) {
-			var list = [];
-			for(var y = center.y - distance; y <= center.y + distance; ++y) {
-				for(var x = center.x - distance; x <= center.x + distance; ++x) {
-					var tile = this.get(x + ',' + y);
-					if(tile)
-						list.push(tile);
-				}
-			}
-			return list;
-		};
 
-		this.renderer = new app.Renderer(canvasElement, function () {
-			this.renderAroundTile(app.getPlayerLocation(), 20); // @TODO: Move knwledge of app.player out of here
-		}.bind(this));
+
 
 		this.tiles.set(new this.Tile(0, 0));
 	}
@@ -47,6 +25,20 @@ define([
 
 	World.prototype = Object.create(EventEmitter.prototype);
 	World.prototype.constructor = World;
+
+	World.prototype.getAreaAroundPosition = function (center, distance) {
+		var list = [],
+			store = this.tiles;
+		for(var y = center.y - distance; y <= center.y + distance; ++y) {
+			for(var x = center.x - distance; x <= center.x + distance; ++x) {
+				var tile = store.get(x + ',' + y);
+				if(tile)
+					list.push(tile);
+			}
+		}
+		return list;
+	};
+
 	/**
 	 *
 	 */
@@ -64,51 +56,7 @@ define([
 		}.bind(this));
 	};
 
-	/**
-	 *
-	 */
-	World.prototype.renderAllTiles = function () {
-		var renderer = this.renderer;
 
-		this.tiles.listFromTopToBottom().forEach(function (tile) {
-			tile.render(renderer);
-		});
-	};
-
-	World.prototype.renderAroundTile = function (tile, distance) {
-		var renderer = this.renderer;
-
-		this.tiles.listWithinManhattanDistance(tile, distance).forEach(function (tile) {
-			tile.render(renderer);
-		});
-	};
-
-	/**
-	 * Pan to pixel values
-	 * @param {Number} x
-	 * @param {Number} y
-	 */
-	World.prototype.panToOffset = function (x, y) {
-		this.renderer.setOffset(x, y);
-		//this.renderer.clear();
-		//this.renderAllTiles();
-	};
-
-	/**
-	 * Pan to the position of a tile
-	 * @param {Number|Tile} x
-	 * @param {Number} [y]
-	 * @param {Number} [z]
-	 */
-	World.prototype.panToTile = function (x, y, z) {
-		var coords = x instanceof this.Tile
-			? this.renderer.pixelForCoordinates(x.x, x.y, x.z, true)
-			: this.renderer.pixelForCoordinates(x, y, z || 0, true);
-		this.panToOffset(
-			-coords[0],
-			-coords[1]
-		)
-	};
 
 	/**
 	 * Returns a "landing zone", aka spawn area

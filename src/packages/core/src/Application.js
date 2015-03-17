@@ -13,13 +13,17 @@ define([
 	Renderer,
 	Player
 ) {
-	function Application(element) {
+	function Application() {
 
 		this.World = World;
 		this.Tile = Tile;
 		this.Renderer = Renderer;
 		this.Player = Player;
 
+		// @TODO: Remove direct reference to a canvas element here
+		this.renderer = new Renderer(document.getElementById('world'), function () {
+			this.renderer.renderAroundTile(this.world, this.player.tile, 20); // @TODO: Move knwledge of app.player out of here
+		}.bind(this));
 
 		/**
 		 * Describes the playable environment: tiles, distances, areas
@@ -45,9 +49,9 @@ define([
 		this.player.setKeyBinds(this.world);
 
 		this.player.on('move', function (tile) {
-			this.world.panToTile(tile);
-			this.world.renderer.clear();
-			this.world.renderer.render();
+			this.renderer.panToTile(tile);
+			this.renderer.clear();
+			this.renderer.render();
 		}.bind(this));
 
 
@@ -64,8 +68,8 @@ define([
 		this.player.on('move', this.ui.currentTile.update.bind(this.ui.currentTile));
 
 		// Call the renderer resize fn once, now that we have both app.world and app.player
-		// @TODO: Too hacky
-		this.world.renderer.onResize();
+		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
+		this.renderer.onResize();
 
 	}
 
