@@ -1,0 +1,35 @@
+{
+	"CANNOT_MOVE__EMPTY_TILE": [
+		"Barely avoided that cliff",
+		"Shit that nearly got me"
+	],
+	"CANNOT_MOVE__TOO_STEEP": [
+		"That's too steep bro",
+		"Couldn't do that if I wanted to",
+		"Too steep, bro",
+		"I don't have climbing gear",
+		"Looks too dangerous",
+		"Wanna get me killed?",
+		"Sure, I'll just grow wings and fly up there"
+	],
+	"CANNOT_MOVE__WATER": [
+		"I need a boat",
+		"My kingdom for a boat!",
+		"Whatttt can't swim brah!",
+		"I ain't gettin' in no water",
+		"Not gonna swim",
+		"Not swimming bro!"
+	],
+	"CANNOT_MOVE__NOT_NEIGHBOUR": false,
+	"CANNOT_WALK__NO_PATH": [
+		"U mad, no way of getting there",
+		"I can't get there",
+		"I don't see how",
+		"Can't get there",
+		"I like turtles"
+	],
+	"CANNOT_MOVE__OBSTRUCTED": [
+		"I shall not pass",
+		"Obstructed."
+	]
+}

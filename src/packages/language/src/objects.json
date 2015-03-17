@@ -1,0 +1,14 @@
+{
+	"ARTIFACT_FENCE": [
+		"Fence"
+	],
+	"ARTIFACT_HOUSE": [
+		"House"
+	],
+	"ARTIFACT_STONES": [
+		"Stones"
+	],
+	"ARTIFACT_VEGETATION": [
+		"Vegetation"
+	]
+}

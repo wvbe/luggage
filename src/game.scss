@@ -1,0 +1,63 @@
+$UNIT: 12px;
+$SPACING: 2 * $UNIT;
+$TILE_SIZE: 32px;
+$ISOMETRIC_VIEW_DIAMETER: 15;
+$time-short: 0.25s;
+$ISOMETRIC_Y_TO_X_OFFSET: 0.3; // For every n on the Y axis, displace n*OFFSET to the right
+$ISOMETRIC_Y_TO_X_RATIO: 0.6;  // n on the Y axis is always this ratio of (horizontal) units
+$ISOMETRIC_Z_TO_X_RATIO: 1; // n on the Z axis is always this ratio of (horizontal) units
+
+$tooltip-background: #1b1b1b;
+#center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+}
+#viewport {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin-left: -1600px;
+	margin-top: -1000px;
+	> * {
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+}
+
+#viewport {
+	transition: top $time-short linear, left $time-short linear;
+}
+
+#backdrop {
+	transition: background-position 0.5s linear;
+//	background: {
+//		image: url('images/8LluB6D.GIF');
+//		//color: rgb(37,180,210);
+//		color: rgb(29,185,213);
+//		position: 0px 0px;
+//	}
+}
+#cursor {
+	position: absolute;
+}
+#minimap {
+	position: absolute;
+	bottom: $SPACING;
+	right: $SPACING;
+	width: 240px;
+	height: 240px;
+	z-index: 9999;
+}
+
+@import './packages/ui/src/fonts';
+@import './packages/ui/src/tooltips';
+
+html, body {
+	@extend %font--interface;
+	background: url('images/stardust.png');
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}

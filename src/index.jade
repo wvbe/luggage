@@ -1,0 +1,38 @@
+doctype
+
+html
+	head
+		title 0x.ee
+		link(href='https://fonts.googleapis.com/css?family=Open+Sans|PT+Sans+Narrow|Inconsolata|Gloria+Hallelujah|Schoolbell' rel='stylesheet' type='text/css')
+		meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1')
+		// build:css
+		link(href='/style.css' rel='stylesheet' type='text/css')
+		// endbuild
+		// build:js
+		script(src='/lib/requirejs/require.js')
+		script(src='/bootstrap.js')
+		script(src='/app.js')
+		// endbuild
+	body
+
+		section#windows
+
+		#center
+			#viewport
+				#backdrop
+				canvas#world
+				canvas#mouse
+				canvas#entities
+				canvas#player
+				#expressions
+				#world-tooltip-renderer
+
+
+		.player-banner
+			.player-banner__item.player-banner__item--fixed
+				.flag.player-banner__item
+					canvas#current-tile__canvas.flag__logo(width='250', height='400')
+					.flag__content
+						#current-tile__coordinates(label='coords') (x, y, z)
+						#current-tile__climate(label='climate') undetermined
+						#current-tile__artifacts(label='artifacts') none

@@ -1,0 +1,89 @@
+$tooltip-lift: 45px;
+$tooltip-arrow-size: 6px;
+$tooltip-color-bg: rgba(0,0,0,0.8);
+$tooltip-color-hover-bg: rgba(#939300,0.8);
+$tooltip-color-fg: #fff;
+$tooltip-color-fg-dim: #ccc;
+
+%font-dimmed {
+	color: $tooltip-color-fg-dim;
+}
+dl.tooltip__item {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	dt {
+		@extend %font-dimmed;
+		text-align: right;
+		flex: {
+			grow: 0;
+			shrink: 0;
+			basis: 6em;
+		}
+		padding: 0 1em;
+	}
+	dd {
+		text-align: left;
+		margin: 0;
+		padding: 0 1em;
+		flex: {
+			grow: 1;
+			shrink: 1;
+		}
+	}
+}
+.tooltip {
+	position: absolute;
+	transform: translate(-50%, -$tooltip-lift);
+	color: $tooltip-color-fg;
+	width: 250px;
+	text-align: center;
+	border-radius: 3px;
+	box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+	border-top: 3px solid $tooltip-color-bg;
+	border-bottom: 3px solid $tooltip-color-bg;
+
+	&.language {
+		@extend %font--player;
+	}
+
+	&__item {
+
+		background-color: $tooltip-color-bg;
+		display: block;
+		padding: 10px;
+		margin: 0;
+		transition: background-color 0.2s;
+		border-top: 1px solid rgba(255,255,255, 0.1);
+		&:first-child {
+			border-top: none;
+		}
+
+	}
+
+
+	.menu &__item:hover {
+		cursor: pointer;
+		background-color: $tooltip-color-hover-bg;
+	}
+	.language &__item {
+		&::before, &::after {
+			content: '"';
+		}
+	}
+	&::before {
+		display: block;
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		width: 0;
+		height: 0;
+		transform: translate(-$tooltip-arrow-size, 3px);
+		border-left: $tooltip-arrow-size solid transparent;
+		border-right: $tooltip-arrow-size solid transparent;
+
+		border-top: $tooltip-arrow-size solid $tooltip-color-bg;
+	}
+
+}

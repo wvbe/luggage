@@ -1,0 +1,23 @@
+@import './fonts/google';
+
+$font-size: 12px;
+%font--npc{
+  font-family: 'Gloria Hallelujah', serif;
+  font-size: $font-size * 1.4;
+}
+%font--player {
+  font-family: 'Schoolbell', serif;
+  font-size: $font-size * 1.4;
+}
+%font--interface {
+  font-family: 'Open Sans', sans-serif;
+  font-size: $font-size;
+}
+%font--small {
+  font-family: 'PT Sans Narrow', sans-serif;
+  font-size: $font-size * 0.8;
+}
+%font--system {
+  font-family: 'Inconsolata', monospace;
+  font-size: $font-size;
+}
