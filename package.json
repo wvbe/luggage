@@ -1,0 +1,30 @@
+{
+  "name": "0xee",
+  "version": "1.0.0",
+  "description": "To run:",
+  "main": "dependo.js",
+  "devDependencies": {
+    "autoprefixer": "^4.0.0",
+    "clean-css": "^3.0.3",
+    "gulp": "^3.8.10",
+    "gulp-html-replace": "^1.4.1",
+    "gulp-jade": "^0.10.0",
+    "gulp-requirejs": "^0.1.3",
+    "gulp-uglify": "^1.0.2",
+    "jade": "^1.8.2",
+    "node-sass": "^1.2.3"
+  },
+  "scripts": {
+    "start": "serve src lib",
+    "build": "gulp build && xdg-open dist/index.html",
+    "deploy": "scp -r dist/* 0x.ee:/var/www/0x.ee",
+    "everything": "rm -rf dist && gulp build && npm run deploy",
+    "dependo": "node dependo.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.crossfrontal.com:0x-ee/0x00.git"
+  },
+  "author": "",
+  "license": "ISC"
+}

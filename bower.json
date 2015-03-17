@@ -1,0 +1,28 @@
+{
+  "name": "0xee",
+  "version": "0.0.0",
+  "authors": [
+    "wvbe <wybe@x-54.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.15",
+    "requirejs-text": "~2.0.12",
+    "markdown": "~0.5.0",
+    "gyro.js": "~1.0.0",
+    "object-store": "git@github.com:wvbe/object-store.git",
+    "bubble": "git@git.crossfrontal.com:x-54-sandbox/bubble.git",
+    "superagent": "~0.21.0",
+    "js-base64": "~2.1.5",
+    "tiny-emitter": "~1.0.0",
+    "promise-polyfill": "~1.1.4"
+  }
+}

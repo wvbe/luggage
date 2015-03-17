@@ -1,0 +1,25 @@
+doctype
+
+html
+	head
+		title 0x.ee
+		meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1')
+		// build:css
+		link(href='/style.css' rel='stylesheet' type='text/css')
+		// endbuild
+		// build:js
+		script(src='/lib/requirejs/require.js')
+		script(src='/bootstrap.js')
+		script(src='/app.js')
+		// endbuild
+	body
+		.wrapper
+			.wrapper__viewport#viewport
+				canvas#world(width='640', height='480')
+				canvas#player
+			.wrapper__sidebar
+				pre#dump-current-tile
+				ul#action-list
+				dl
+					dt Arrows
+					dd Move
