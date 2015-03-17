@@ -72,10 +72,17 @@ define([
 		)
 	};
 
+	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
+		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
+		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
+		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN);
+
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
+		var rX = (x + y) * ISOMETRIC_COS,
+			rY = (x - y) * ISOMETRIC_SIN;
 		return [
-			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width)  + (x + ISOMETRIC_Y_TO_X_OFFSET * y)                         * TILE_SIZE,
-			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) - (y * ISOMETRIC_Y_TO_X_RATIO + z * ISOMETRIC_Z_TO_X_RATIO) * TILE_SIZE
+			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width)  + rX * TILE_SIZE,
+			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) + rY * TILE_SIZE
 		];
 	};
 
