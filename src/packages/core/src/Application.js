@@ -22,7 +22,7 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.renderer.renderAroundTile(this.world, this.player.tile, 20); // @TODO: Move knwledge of app.player out of here
+			this.renderer.renderAroundTile(this.world, this.player.tile, 15); // @TODO: Move knwledge of app.player out of here
 		}.bind(this));
 
 		/**

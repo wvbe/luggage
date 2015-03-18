@@ -26,9 +26,12 @@ define([
 	World.prototype = Object.create(EventEmitter.prototype);
 	World.prototype.constructor = World;
 
+	// @TODO: The delta X & Y's (and their render order) can be cached for every distance.
 	World.prototype.getAreaAroundPosition = function (center, distance) {
 		var list = [],
 			store = this.tiles;
+
+		// Get only tiles within manhattan distance
 		for(var y = center.y - distance; y <= center.y + distance; ++y) {
 			for(var x = center.x - distance; x <= center.x + distance; ++x) {
 				var tile = store.get(x + ',' + y);
@@ -36,9 +39,16 @@ define([
 					list.push(tile);
 			}
 		}
-		return list;
+
+		// Filter to pythagoran distance
+		return list.filter(function (tile) {
+			return Math.floor(pythagoras(tile.x - center.x, tile.y - center.y)) <= distance;
+		});
 	};
 
+	function pythagoras (x, y) {
+		return Math.sqrt(x*x + y*y);
+	}
 	/**
 	 *
 	 */

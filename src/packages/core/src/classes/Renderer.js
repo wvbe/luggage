@@ -4,11 +4,13 @@ define([
 
 
 	// @TODO: Pannable viewport & shit
-	var TILE_SIZE = 32;
+	var TILE_SIZE = 24;
 
-	var ISOMETRIC_Y_TO_X_OFFSET = 0.3, // For every n on the Y axis, displace n*OFFSET to the right
-		ISOMETRIC_Y_TO_X_RATIO = 0.6,  // n on the Y axis is always this ratio of (horizontal) units
-		ISOMETRIC_Z_TO_X_RATIO = 1; // n on the Z axis is always this ratio of (horizontal) units
+	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
+		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
+		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
+		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN);
+
 
 	function Renderer(canvasElement, renderCallback) {
 		this.canvas = canvasElement;
@@ -71,11 +73,6 @@ define([
 			-coords[1]
 		)
 	};
-
-	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
-		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
-		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
-		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN);
 
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
 		var rX = (x + y) * ISOMETRIC_COS,
