@@ -35,7 +35,7 @@ define([
 			event.preventDefault();
 
 			switch (event.keyCode) {
-				case 37: //left
+				case 37: // left
 					return this.move(world, -1, 0);
 				case 38: // up
 					return this.move(world, 0, 1);
@@ -45,6 +45,22 @@ define([
 					return this.move(world, 0, -1);
 			}
 		}.bind(this));
+	};
+
+
+	/**
+	 *
+	 * @param {Renderer} renderer
+	 */
+	Player.prototype.render = function (renderer) {
+		renderer.setFillColor('#fff');
+		var sphereSize = 0.3;
+		renderer.fillPerfectCircle(
+			this.tile.x,
+			this.tile.y,
+			this.tile.z + sphereSize/2,
+			sphereSize
+		);
 	};
 
 	return Player;

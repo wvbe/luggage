@@ -6,7 +6,7 @@ define([
 	ObjectStore
 ) {
 
-	function World(app, canvasElement) {
+	function World(app) {
 		EventEmitter.call(this);
 
 		this.Tile = app.Tile;
@@ -16,10 +16,7 @@ define([
 			primaryKey: 'id'
 		});
 
-
-
-
-		this.tiles.set(new this.Tile(0, 0));
+		this.tiles.set(new this.Tile(0, 0, Math.random()));
 	}
 
 
@@ -52,6 +49,7 @@ define([
 	/**
 	 *
 	 */
+	var built = 1;
 	World.prototype.generateNewTiles = function (saturationThresholdOverride) {
 		this.tiles.list().forEach(function (tile) {
 			if(tile.isSaturated(this.tiles, saturationThresholdOverride))
@@ -60,8 +58,11 @@ define([
 			//shuffle(tile.getUnfilledNeighbours(this.tiles)).forEach(function (id) {
 			tile.getUnfilledNeighbours(this.tiles).forEach(function (id) {
 				var coordinates = tile.getCoordinatesForId(id);
-				var neighbour = new this.Tile(coordinates[0], coordinates[1]);
+				var neighbour = new this.Tile(coordinates[0], coordinates[1],
+					Math.abs(4 * Math.cos(built/100))
+				);
 				this.tiles.set(neighbour);
+				++built;
 			}.bind(this));
 		}.bind(this));
 	};

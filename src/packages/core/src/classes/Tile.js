@@ -2,9 +2,9 @@ define([], function() {
 
 	function Tile(x, y, z) {
 		this.id = this.getIdForCoordinates(x, y);
-		this.x = x;
-		this.y = y;
-		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
+		this.x = Math.round(x);
+		this.y = Math.round(y);
+		this.z = Math.round(z || 0);//0.5 * Math.random(); // at sea level, not in use for now
 
 		this.bgColor = this.getFillRgb();
 		this.fgColor = this.bgColor.map(function (val) {
@@ -34,18 +34,22 @@ define([], function() {
 		});
 	};
 
+	window.whatttt = 0;
 	Tile.prototype.getAllNeighbourIds = function () {
-		return [
-			this.getIdForCoordinates(this.x, this.y + 1), // North
-			this.getIdForCoordinates(this.x - 1, this.y), // West
-			this.getIdForCoordinates(this.x + 1, this.y), // East
-			this.getIdForCoordinates(this.x, this.y - 1),  // South
+		if(!this.neighbourIds)
+			this.neighbourIds = [
+				this.getIdForCoordinates(this.x, this.y + 1), // North
+				this.getIdForCoordinates(this.x - 1, this.y), // West
+				this.getIdForCoordinates(this.x + 1, this.y), // East
+				this.getIdForCoordinates(this.x, this.y - 1),  // South
 
-			this.getIdForCoordinates(this.x - 1, this.y - 1), // South-west
-			this.getIdForCoordinates(this.x + 1, this.y + 1), // North-east
-			this.getIdForCoordinates(this.x + 1, this.y - 1), // South-east
-			this.getIdForCoordinates(this.x -1 , this.y + 1)  // North-west
-		];
+				this.getIdForCoordinates(this.x - 1, this.y - 1), // South-west
+				this.getIdForCoordinates(this.x + 1, this.y + 1), // North-east
+				this.getIdForCoordinates(this.x + 1, this.y - 1), // South-east
+				this.getIdForCoordinates(this.x -1 , this.y + 1)  // North-west
+			];
+
+		return this.neighbourIds;
 	};
 
 	Tile.prototype.getAllNeighbours = function (registry) {
@@ -77,21 +81,24 @@ define([], function() {
 	 * @param {Renderer} renderer
 	 */
 	Tile.prototype.render = function (renderer) {
+		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
+		renderer.fillEastToWestPlane(this.x,this.y,this.z,1,1);
+
+		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
+		renderer.fillNorthToSouthPlane(this.x,this.y,this.z,1,1);
+
 		renderer.setFillColor(this.bgColor);
-		renderer.fillFlatPlane(
-			this.x,
-			this.y,
-			this.z,
-			1,
-			1
-		);
+		renderer.fillFlatPlane(this.x,this.y,this.z,1,1);
 	};
 
 	Tile.prototype.getFillRgb = function () {
 		return [
-			70 + 10 * Math.random(),
-			140 + 40 * Math.random(),
-			60 + 10 * Math.random()
+			100 + 25 * this.z,
+			100 + 25 * this.z,
+			100 + 25 * this.z
+//			70 + 10 * Math.random(),
+//			140 + 40 * Math.random(),
+//			60 + 10 * Math.random()
 		].map(function (val) {
 			return Math.round(val);
 		});

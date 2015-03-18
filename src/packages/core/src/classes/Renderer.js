@@ -3,8 +3,10 @@ define([
 ) {
 
 
-	// @TODO: Pannable viewport & shit
-	var TILE_SIZE = 24;
+	// @TODO: Not so ugly plz
+	window.TILE_SIZE = 24;
+	window.TILE_HEIGHT = window.TILE_SIZE/6;
+
 
 	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
 		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
@@ -33,9 +35,9 @@ define([
 
 		this.canvas.width = newWidth;
 		this.canvas.height = newHeight;
-
-		//this.context.shadowColor = 'rgb(20, 41, 20)';
-		//this.context.shadowOffsetY = 6;
+//
+//		this.context.shadowColor = 'rgb(20, 41, 20)';
+//		this.context.shadowOffsetY = 6;
 
 		if(typeof this.render === 'function')
 			this.render();
@@ -61,12 +63,12 @@ define([
 	 * Pan to the position of a tile
 	 * @param {Number|Tile} x
 	 * @param {Number} [y]
-	 * @param {Number} [z]
+	 * @param {Number} [z] CURRENTLY IGNORED
 	 */
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = typeof x === 'object' && !!x
-			? this.pixelForCoordinates(x.x, x.y, x.z, true)
-			: this.pixelForCoordinates(x, y, z || 0, true);
+			? this.pixelForCoordinates(x.x, x.y, 0, true)
+			: this.pixelForCoordinates(x, y, 0 || 0, true);
 
 		this.setOffset(
 			-coords[0],
@@ -79,23 +81,67 @@ define([
 			rY = (x - y) * ISOMETRIC_SIN;
 		return [
 			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width)  + rX * TILE_SIZE,
-			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) + rY * TILE_SIZE
+			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) + rY * TILE_SIZE - TILE_HEIGHT * z
 		];
 	};
 
+	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius) {
+		var center = this.pixelForCoordinates(x, y, z);
+		this.context.beginPath();
+		this.context.arc(center[0], center[1], radius * TILE_SIZE/2, 0, 2 * Math.PI);
+		this.context.closePath();
+		this.context.fill();
+		this.context.stroke();
+	};
+
 	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height) {
-		var spaceBetween = -0.01; // Slight overlap
+		var spaceBetween = 0; // Slight overlap
+		this.context.strokeStyle = 'rgb(0,0,0)';
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - width/2 + spaceBetween, y - height/2 + spaceBetween, z),
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z),
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z),
-			this.pixelForCoordinates(x - width/2 + spaceBetween, y + height/2 - spaceBetween, z)
+			this.pixelForCoordinates(x - width/2 + spaceBetween, y - height/2 + spaceBetween, z), // -- links onder
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z), // +- rechts onder
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z), // ++ rechts boven
+			this.pixelForCoordinates(x - width/2 + spaceBetween, y + height/2 - spaceBetween, z)  // -+ links boven
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
 		this.context.closePath();
 		this.context.fill();
+		this.context.stroke();
+	};
+
+	Renderer.prototype.fillEastToWestPlane = function (x, y, z, width, height) {
+		var spaceBetween = 0; // Slight overlap
+		this.context.beginPath();
+		[
+			this.pixelForCoordinates(x - width / 2 + spaceBetween, y - height / 2 + spaceBetween, z),
+			this.pixelForCoordinates(x + width / 2 - spaceBetween, y - height / 2 + spaceBetween, z),
+			this.pixelForCoordinates(x + width / 2 - spaceBetween, y - height / 2 + spaceBetween, -1),
+			this.pixelForCoordinates(x - width / 2 + spaceBetween, y - height / 2 + spaceBetween, -1)
+		].forEach(function (coords, i) {
+				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
+			}.bind(this));
+		this.context.closePath();
+		this.context.fill();
+		this.context.stroke();
+	};
+
+
+	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, width, height) {
+		var spaceBetween = 0; // Slight overlap
+		this.context.beginPath();
+		[
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z), // +- rechts onder
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, -1), // +- rechts onder*,
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, -1), // ++ rechts boven*
+			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z), // ++ rechts boven
+		].forEach(function (coords, i) {
+			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
+		}.bind(this));
+		this.context.closePath();
+		this.context.fill();
+		this.context.stroke();
 	};
 
 	Renderer.prototype.setFillColor = function(color) {

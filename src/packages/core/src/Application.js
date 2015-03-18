@@ -13,6 +13,7 @@ define([
 	Renderer,
 	Player
 ) {
+	var PARALLAX_MODIFIER = -0.1;
 	function Application() {
 
 		this.World = World;
@@ -22,17 +23,22 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.renderer.renderAroundTile(this.world, this.player.tile, 15); // @TODO: Move knwledge of app.player out of here
+			this.renderer.renderAroundTile(this.world, this.player.tile, 30); // @TODO: Move knwledge of app.player out of here
+		}.bind(this));
+
+		// @TODO: Remove direct reference to a canvas element here
+		this.cursor = new Renderer(document.getElementById('player'), function () {
+			this.player.render(this.cursor);
 		}.bind(this));
 
 		/**
 		 * Describes the playable environment: tiles, distances, areas
 		 * @type {World}
 		 */
-		this.world = new World(
-			this, // Pass the app
-			document.getElementById('world') // Specify canvas element to render World in
-		);
+		// @TODO must absolutely clean this up
+		this.ponyWorld = new World(this);
+		this.darkWorld = new World(this);
+		this.world = this.ponyWorld;
 
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
@@ -48,10 +54,20 @@ define([
 		// Binds keyboard input to interaction with the world
 		this.player.setKeyBinds(this.world);
 
+		// @TODO must absolutely clean this up
+		// Does parallax scrolling on the viewport
+		var viewportElement = document.getElementById('viewport');
 		this.player.on('move', function (tile) {
 			this.renderer.panToTile(tile);
 			this.renderer.clear();
 			this.renderer.render();
+
+			var bgPos = this.renderer.pixelForCoordinates(tile.x * PARALLAX_MODIFIER, tile.y * PARALLAX_MODIFIER, tile.z * PARALLAX_MODIFIER, true);
+			viewportElement.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
+
+			this.cursor.panToTile(tile);
+			this.cursor.clear();
+			this.cursor.render();
 		}.bind(this));
 
 
@@ -70,6 +86,20 @@ define([
 		// Call the renderer resize fn once, now that we have both app.world and app.player
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
 		this.renderer.onResize();
+		this.cursor.onResize();
+
+		// @TODO: Do this way more nicely, bitch
+		// Zooms the viewport in and out on mousewheel action
+		document.body.addEventListener('mousewheel', function (e) {
+			window.TILE_SIZE = Math.abs(window.TILE_SIZE + e.wheelDelta/50);
+			window.TILE_HEIGHT = window.TILE_SIZE/6;
+			this.renderer.panToTile(this.player.tile);
+			this.renderer.clear();
+			this.renderer.render();
+			this.cursor.panToTile(this.player.tile);
+			this.cursor.clear();
+			this.cursor.render();
+		}.bind(this));
 
 	}
 
@@ -77,19 +107,15 @@ define([
 		return this.player.tile;
 	};
 
-	Application.prototype.generateTilesOnUnsaturatedEdges = function (iterations) {
+	Application.prototype.generateTilesOnUnsaturatedEdges = function generateTilesOnUnsaturatedEdges(iterations) {
 		iterations = iterations === undefined
 			? 1
 			: parseInt(iterations || 0);
-		var tiles = this.world.tiles,
-			before = tiles.list().length;
-		console.time('Generating tiles');
+		console.time(arguments.callee.name);
 		for(var i = 0; i < iterations; ++i) {
 			this.world.generateNewTiles();
 		}
-		var after = tiles.list().length;
-
-		console.timeEnd('Generating tiles');
+		console.timeEnd(arguments.callee.name);
 	};
 
 	return Application;
