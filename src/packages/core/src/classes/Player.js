@@ -54,12 +54,12 @@ define([
 	 */
 	Player.prototype.render = function (renderer) {
 		renderer.setFillColor('#fff');
-		var sphereSize = 0.3;
+		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
-			0,
-			0,
-			this.tile.z + sphereSize/2,
-			sphereSize
+			0.5, // Positioned on the middle...
+			0.5, // ... of the x and y of tile
+			this.tile.z + sphereRadius, // Center is on same tile z + it's own radius
+			sphereRadius
 		);
 	};
 

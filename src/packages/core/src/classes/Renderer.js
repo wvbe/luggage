@@ -89,7 +89,7 @@ define([
 	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius) {
 		var center = this.pixelForCoordinates(x, y, z);
 		this.context.beginPath();
-		this.context.arc(center[0], center[1], radius * TILE_SIZE/2, 0, 2 * Math.PI);
+		this.context.arc(center[0], center[1], radius * TILE_SIZE, 0, 2 * Math.PI);
 		this.context.closePath();
 		this.context.fill();
 		this.context.stroke();
@@ -99,10 +99,10 @@ define([
 		this.context.strokeStyle = 'rgb(0,0,0)';
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - width/2, y - height/2, z), // -- links onder
-			this.pixelForCoordinates(x + width/2, y - height/2, z), // +- rechts onder
-			this.pixelForCoordinates(x + width/2, y + height/2, z), // ++ rechts boven
-			this.pixelForCoordinates(x - width/2, y + height/2, z)  // -+ links boven
+			this.pixelForCoordinates(x, y, z), // -- links onder
+			this.pixelForCoordinates(x + width, y, z), // +- rechts onder
+			this.pixelForCoordinates(x + width, y + height, z), // ++ rechts boven
+			this.pixelForCoordinates(x, y + height, z)  // -+ links boven
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
@@ -114,10 +114,10 @@ define([
 	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - length / 2, y - 0.5, z + height),
-			this.pixelForCoordinates(x + length / 2, y - 0.5, z + height),
-			this.pixelForCoordinates(x + length / 2, y - 0.5, z),
-			this.pixelForCoordinates(x - length / 2, y - 0.5, z)
+			this.pixelForCoordinates(x, y, z + height),
+			this.pixelForCoordinates(x + length, y, z + height),
+			this.pixelForCoordinates(x + length, y, z),
+			this.pixelForCoordinates(x, y, z)
 		].forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
@@ -130,10 +130,10 @@ define([
 	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x + 0.5, y - length/2, z + height), // +- rechts onder
-			this.pixelForCoordinates(x + 0.5, y - length/2, z), // +- rechts onder*,
-			this.pixelForCoordinates(x + 0.5, y + length/2, z), // ++ rechts boven*
-			this.pixelForCoordinates(x + 0.5, y + length/2, z + height), // ++ rechts boven
+			this.pixelForCoordinates(x + 1, y, z + height), // +- rechts onder
+			this.pixelForCoordinates(x + 1, y, z), // +- rechts onder*,
+			this.pixelForCoordinates(x + 1, y + length, z), // ++ rechts boven*
+			this.pixelForCoordinates(x + 1, y + length, z + height), // ++ rechts boven
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
