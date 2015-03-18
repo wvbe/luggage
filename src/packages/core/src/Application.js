@@ -23,7 +23,7 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.renderer.renderAroundTile(this.world, this.player.tile, 30); // @TODO: Move knwledge of app.player out of here
+			this.renderer.renderAroundTile(this.world, this.player.tile, 10); // @TODO: Move knwledge of app.player out of here
 		}.bind(this));
 
 		// @TODO: Remove direct reference to a canvas element here
@@ -65,7 +65,6 @@ define([
 			var bgPos = this.renderer.pixelForCoordinates(tile.x * PARALLAX_MODIFIER, tile.y * PARALLAX_MODIFIER, tile.z * PARALLAX_MODIFIER, true);
 			viewportElement.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 
-			this.cursor.panToTile(tile);
 			this.cursor.clear();
 			this.cursor.render();
 		}.bind(this));
@@ -85,13 +84,14 @@ define([
 
 		// Call the renderer resize fn once, now that we have both app.world and app.player
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
-		this.renderer.onResize();
-		this.cursor.onResize();
+//		this.renderer.onResize();
+//		this.cursor.onResize();
 
 		// @TODO: Do this way more nicely, bitch
 		// Zooms the viewport in and out on mousewheel action
+		var SCROLL_ZOOM_SPEED = 0.8;
 		document.body.addEventListener('mousewheel', function (e) {
-			window.TILE_SIZE = Math.abs(window.TILE_SIZE + e.wheelDelta/50);
+			window.TILE_SIZE = Math.abs(window.TILE_SIZE * (e.wheelDelta < 0 ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED));
 			window.TILE_HEIGHT = window.TILE_SIZE/6;
 			this.renderer.panToTile(this.player.tile);
 			this.renderer.clear();

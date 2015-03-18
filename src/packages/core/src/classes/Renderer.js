@@ -4,8 +4,8 @@ define([
 
 
 	// @TODO: Not so ugly plz
-	window.TILE_SIZE = 24;
-	window.TILE_HEIGHT = window.TILE_SIZE/6;
+	window.TILE_SIZE = 32;
+	window.TILE_HEIGHT = window.TILE_SIZE/8;
 
 
 	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
@@ -17,6 +17,7 @@ define([
 	function Renderer(canvasElement, renderCallback) {
 		this.canvas = canvasElement;
 		this.context = this.canvas.getContext('2d');
+		this.onResize();
 		this.render = renderCallback;
 		this.offset = {
 			x: 0,
@@ -95,14 +96,13 @@ define([
 	};
 
 	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height) {
-		var spaceBetween = 0; // Slight overlap
 		this.context.strokeStyle = 'rgb(0,0,0)';
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - width/2 + spaceBetween, y - height/2 + spaceBetween, z), // -- links onder
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z), // +- rechts onder
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z), // ++ rechts boven
-			this.pixelForCoordinates(x - width/2 + spaceBetween, y + height/2 - spaceBetween, z)  // -+ links boven
+			this.pixelForCoordinates(x - width/2, y - height/2, z), // -- links onder
+			this.pixelForCoordinates(x + width/2, y - height/2, z), // +- rechts onder
+			this.pixelForCoordinates(x + width/2, y + height/2, z), // ++ rechts boven
+			this.pixelForCoordinates(x - width/2, y + height/2, z)  // -+ links boven
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
@@ -111,14 +111,13 @@ define([
 		this.context.stroke();
 	};
 
-	Renderer.prototype.fillEastToWestPlane = function (x, y, z, width, height) {
-		var spaceBetween = 0; // Slight overlap
+	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x - width / 2 + spaceBetween, y - height / 2 + spaceBetween, z),
-			this.pixelForCoordinates(x + width / 2 - spaceBetween, y - height / 2 + spaceBetween, z),
-			this.pixelForCoordinates(x + width / 2 - spaceBetween, y - height / 2 + spaceBetween, -1),
-			this.pixelForCoordinates(x - width / 2 + spaceBetween, y - height / 2 + spaceBetween, -1)
+			this.pixelForCoordinates(x - length / 2, y - 0.5, z + height),
+			this.pixelForCoordinates(x + length / 2, y - 0.5, z + height),
+			this.pixelForCoordinates(x + length / 2, y - 0.5, z),
+			this.pixelForCoordinates(x - length / 2, y - 0.5, z)
 		].forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
@@ -128,14 +127,13 @@ define([
 	};
 
 
-	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, width, height) {
-		var spaceBetween = 0; // Slight overlap
+	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, z), // +- rechts onder
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y - height/2 + spaceBetween, -1), // +- rechts onder*,
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, -1), // ++ rechts boven*
-			this.pixelForCoordinates(x + width/2 - spaceBetween, y + height/2 - spaceBetween, z), // ++ rechts boven
+			this.pixelForCoordinates(x + 0.5, y - length/2, z + height), // +- rechts onder
+			this.pixelForCoordinates(x + 0.5, y - length/2, z), // +- rechts onder*,
+			this.pixelForCoordinates(x + 0.5, y + length/2, z), // ++ rechts boven*
+			this.pixelForCoordinates(x + 0.5, y + length/2, z + height), // ++ rechts boven
 		].forEach(function (coords, i) {
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));

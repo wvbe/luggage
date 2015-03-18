@@ -34,7 +34,6 @@ define([], function() {
 		});
 	};
 
-	window.whatttt = 0;
 	Tile.prototype.getAllNeighbourIds = function () {
 		if(!this.neighbourIds)
 			this.neighbourIds = [
@@ -82,13 +81,33 @@ define([], function() {
 	 */
 	Tile.prototype.render = function (renderer) {
 		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
-		renderer.fillEastToWestPlane(this.x,this.y,this.z,1,1);
+		renderer.fillEastToWestPlane(
+			this.x,
+			this.y,
+			-1,
+			1,
+				1 + this.z
+		);
 
 		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
-		renderer.fillNorthToSouthPlane(this.x,this.y,this.z,1,1);
+		renderer.fillNorthToSouthPlane(
+			this.x,
+			this.y,
+			-1,
+			1,
+				1 + this.z
+		);
 
 		renderer.setFillColor(this.bgColor);
-		renderer.fillFlatPlane(this.x,this.y,this.z,1,1);
+		renderer.fillFlatPlane(
+			this.x,
+			this.y,
+			this.z,
+			1,
+			1
+		);
+
+		//this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.getFillRgb = function () {
@@ -103,6 +122,44 @@ define([], function() {
 			return Math.round(val);
 		});
 	};
+
+	Tile.prototype.renderRandomArtifact = function (renderer) {
+		var buildingOffset = [
+				0,
+				0,
+			],
+			buildingSize = [
+				1,
+				0.4,
+				1
+			];
+		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
+		renderer.fillEastToWestPlane(
+			this.x - 0.5 + buildingOffset[0],
+			this.y - 0.5 + buildingOffset[1],
+			this.z,
+			buildingSize[0],
+			buildingSize[2]
+		);
+
+		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
+		renderer.fillNorthToSouthPlane(
+			this.x - 0.5 + buildingOffset[0],
+			this.y - 0.5 + buildingOffset[1],
+			this.z,
+			buildingSize[1],
+			buildingSize[2]
+		);
+
+		renderer.setFillColor(this.bgColor);
+		renderer.fillFlatPlane(
+			this.x - 0.5 + buildingOffset[0],
+			this.y - 0.5 + buildingOffset[1],
+			this.z + buildingSize[2],
+			buildingSize[0],
+			buildingSize[1]
+		);
+	}
 
 	return Tile;
 });

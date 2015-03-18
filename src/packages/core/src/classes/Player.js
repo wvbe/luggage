@@ -56,8 +56,8 @@ define([
 		renderer.setFillColor('#fff');
 		var sphereSize = 0.3;
 		renderer.fillPerfectCircle(
-			this.tile.x,
-			this.tile.y,
+			0,
+			0,
 			this.tile.z + sphereSize/2,
 			sphereSize
 		);
