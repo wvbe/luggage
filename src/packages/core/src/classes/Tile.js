@@ -1,4 +1,8 @@
-define([], function() {
+define([
+	'Color'
+], function(
+	Color
+	) {
 
 	// Must be known in order to produce a valid color range for all possible tiles
 	var MAX_TILE_Z = 12;
@@ -9,6 +13,8 @@ define([], function() {
 		this.y = Math.round(y);
 		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
 
+		this.fillColor = null;
+		this.strokeColor = new Color([0, 0, 0]);
 
 		// Will not be open to new generated neighbours once at least this number of neighbors is already present
 		//this.saturationThreshold = Math.round(3 + 3 * this.z/7);
@@ -80,47 +86,18 @@ define([], function() {
 	 * @param {Renderer} renderer
 	 */
 	Tile.prototype.render = function (renderer) {
-		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
-		renderer.fillEastToWestPlane(
-			this.x,
-			this.y,
-			-1,
-			1,
-			1 + this.z
-		);
+		renderer.fillBox(this.x, this.y, -1, 1, 1, 1 + this.z, this.strokeColor, this.fillColor.lightenByRatio(0.3));
 
-		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
-		renderer.fillNorthToSouthPlane(
-			this.x + 1,
-			this.y,
-			-1,
-			1,
-			1 + this.z
-		);
-
-		renderer.setFillColor(this.bgColor);
-		renderer.fillFlatPlane(
-			this.x,
-			this.y,
-			this.z,
-			1,
-			1
-		);
-
-		if(
-			(this.saturationThreshold >= 5.8 && this.z < 5)
-			||(this.saturationThreshold >= 3 && this.z < 1)
-		)
+		if((this.saturationThreshold >= 5.8 && this.z < 5)
+			||(this.saturationThreshold >= 3 && this.z < 1))
 			this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.getFillRgb = function () {
-		return [
-			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5),
-			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5),
-			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5)
-		].map(function (val) {
-			return Math.round(val);
+		return new Color({
+			hue: 82,
+			saturation: 0.5,
+			lightness: 0.2 + 0.5 * Math.pow(this.z/MAX_TILE_Z, 1.5)
 		});
 	};
 
@@ -133,35 +110,19 @@ define([], function() {
 			buildingOffset = [
 				Math.random() * (1 - buildingSize[0]),
 				Math.random() * (1 - buildingSize[1])
-			]
-			;
-		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
-		renderer.fillEastToWestPlane(
+			];
+
+		renderer.fillBox(
 			this.x + buildingOffset[0],
 			this.y + buildingOffset[1],
 			this.z,
 			buildingSize[0],
-			buildingSize[2]
-		);
-
-		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
-		renderer.fillNorthToSouthPlane(
-			this.x + buildingOffset[0] + buildingSize[0],
-			this.y + buildingOffset[1],
-			this.z,
 			buildingSize[1],
-			buildingSize[2]
+			buildingSize[2],
+			this.strokeColor,
+			this.fillColor.lightenByRatio(0.7)
 		);
-
-		renderer.setFillColor(this.bgColor);
-		renderer.fillFlatPlane(
-			this.x + buildingOffset[0],
-			this.y + buildingOffset[1],
-			this.z + buildingSize[2],
-			buildingSize[0],
-			buildingSize[1]
-		);
-	}
+	};
 
 	return Tile;
 });

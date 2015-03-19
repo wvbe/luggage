@@ -86,16 +86,25 @@ define([
 		];
 	};
 
-	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius) {
+	Renderer.prototype.finishLastShape = function (strokeColor, fillColor) {
+		if(fillColor) {
+			this.setFillColor(fillColor);
+			this.context.fill();
+		}
+		if(strokeColor) {
+			this.setStrokeColor(strokeColor);
+			this.context.stroke();
+		}
+	};
+	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius, strokeColor, fillColor) {
 		var center = this.pixelForCoordinates(x, y, z);
 		this.context.beginPath();
 		this.context.arc(center[0], center[1], radius * TILE_SIZE, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.context.fill();
-		this.context.stroke();
+		this.finishLastShape(strokeColor, fillColor);
 	};
 
-	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height) {
+	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height, strokeColor, fillColor) {
 		this.context.strokeStyle = 'rgb(0,0,0)';
 		this.context.beginPath();
 		[
@@ -107,8 +116,7 @@ define([
 			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 		}.bind(this));
 		this.context.closePath();
-		this.context.fill();
-		this.context.stroke();
+		this.finishLastShape(strokeColor, fillColor);
 	};
 
 	/**
@@ -121,7 +129,7 @@ define([
 	 * @param zb
 	 * @param height
 	 */
-	Renderer.prototype.fillVerticalPlane = function (xa, ya, za, xb, yb, zb, height) {
+	Renderer.prototype.fillVerticalPlane = function (xa, ya, za, xb, yb, zb, height, strokeColor, fillColor) {
 
 		this.context.beginPath();
 		[
@@ -133,8 +141,7 @@ define([
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
 		this.context.closePath();
-		this.context.fill();
-		this.context.stroke();
+		this.finishLastShape(strokeColor, fillColor);
 	};
 
 	/**
@@ -145,8 +152,8 @@ define([
 	 * @param length
 	 * @param height
 	 */
-	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
-		this.fillVerticalPlane(x, y, z, x + length, y, z, height);
+	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height, strokeColor, fillColor) {
+		this.fillVerticalPlane(x, y, z, x + length, y, z, height, strokeColor, fillColor);
 	};
 
 	/**
@@ -157,24 +164,25 @@ define([
 	 * @param length
 	 * @param height
 	 */
-	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
-		this.fillVerticalPlane(x, y, z, x, y + length, z, height);
+	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height, strokeColor, fillColor) {
+		this.fillVerticalPlane(x, y, z, x, y + length, z, height, strokeColor, fillColor);
+	};
+	
+	Renderer.prototype.fillBox = function (x, y, z, width, length, height, strokeColor, fillColor) {
+		this.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.3));
+		this.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.6));
+		this.fillFlatPlane(x, y, z + height, width, length, strokeColor, fillColor);
 	};
 
 
 	Renderer.prototype.setFillColor = function(color) {
-		if(Array.isArray(color))
-			color = 'rgb' + (color.length === 4 ? 'a' : '') + '(' + color.join(',') + ')';
-		this.context.fillStyle = color;
-	};
-
-	Renderer.prototype.setFillColor = function(color) {
-		this.context.fillStyle = normalizeColorCode(color);
+		this.context.fillStyle = color.toString();
 	};
 
 	Renderer.prototype.setStrokeColor = function(color) {
-		this.context.strokeStyle = normalizeColorCode(color);
+		this.context.strokeStyle = color.toString();
 	};
+
 	/**
 	 *
 	 */

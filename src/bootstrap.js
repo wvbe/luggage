@@ -5,11 +5,14 @@ require.config({
 
 		'app': 'app',
 
-		// 3rd party
-		//'promise':'../lib/promise-polyfill/Promise', // Fuck you IE
-		'object-store':'../lib/object-store/ObjectStore',
-		//'superagent':                 '../lib/superagent/superagent',
-		'tiny-emitter':                 '../lib/tiny-emitter/dist/tinyemitter'
+		// https://github.com/wvbe/object-store
+		'object-store': '../lib/object-store/ObjectStore',
+
+		// https://github.com/scottcorgan/tiny-emitter
+		'tiny-emitter': '../lib/tiny-emitter/dist/tinyemitter',
+
+		// https://github.com/brehaut/color-js/
+		'Color': '../lib/color-js/color'
 	},
 	'packages': [
 
@@ -17,6 +20,11 @@ require.config({
 		{ name: 'ui',            location: 'packages/ui/src'},
 		{ name: 'language',            location: 'packages/language/src'},
 
-	]
+	],
+	shim: {
+		'Color': {
+			exports: 'net.brehaut.Color'
+		}
+	}
 
 });

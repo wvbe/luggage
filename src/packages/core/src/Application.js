@@ -48,8 +48,7 @@ define([
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.tiles.list().forEach(function(t) {
-
-			t.bgColor = t.getFillRgb();
+			t.fillColor = t.getFillRgb();
 			//t.z = Math.round(t.z);
 		});
 		/**
