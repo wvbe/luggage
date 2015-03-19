@@ -16,7 +16,6 @@ define([
 			primaryKey: 'id'
 		});
 
-		this.tiles.set(new this.Tile(0, 0, Math.random()));
 	}
 
 
@@ -49,24 +48,29 @@ define([
 	/**
 	 *
 	 */
-	var built = 1;
 	World.prototype.generateNewTiles = function (saturationThresholdOverride) {
-		this.tiles.list().forEach(function (tile) {
+		var tiles = this.tiles.list();
+		if(!tiles.length)
+			this.generateNewTile([0, 0]);
+		tiles.forEach(function (tile) {
 			if(tile.isSaturated(this.tiles, saturationThresholdOverride))
 				return;
 
 			//shuffle(tile.getUnfilledNeighbours(this.tiles)).forEach(function (id) {
 			tile.getUnfilledNeighbours(this.tiles).forEach(function (id) {
 				var coordinates = tile.getCoordinatesForId(id);
-				var neighbour = new this.Tile(coordinates[0], coordinates[1],
-					Math.abs(4 * Math.cos(built/100))
-				);
-				this.tiles.set(neighbour);
-				++built;
+				this.generateNewTile(coordinates);
 			}.bind(this));
 		}.bind(this));
 	};
 
+	var built = 1;
+	World.prototype.generateNewTile = function (coordinates) {
+		this.tiles.set(new this.Tile(coordinates[0], coordinates[1],
+			Math.abs(10 * Math.cos(built/100))
+		));
+		++built;
+	};
 
 
 	/**

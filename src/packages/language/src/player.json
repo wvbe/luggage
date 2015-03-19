@@ -1,0 +1,15 @@
+{
+	"CANNOT_MOVE__EMPTY_TILE": [
+		"Barely avoided that cliff",
+		"Shit that nearly got me"
+	],
+	"CANNOT_MOVE__TOO_STEEP_UP": [
+		"That's too steep bro",
+		"Can't be arsed climbing up there",
+		"Too steep, bro"
+	],
+	"CANNOT_MOVE__TOO_STEEP_DOWN": [
+		"Looks too dangerous",
+		"I'm afraid of heights bro"
+	]
+}

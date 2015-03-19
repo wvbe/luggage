@@ -1,7 +1,10 @@
 define([
-	'./JsonObjectDump'
-], function (JsonObjectDump) {
+	'./JsonObjectDump',
+	'./NotificationService'
+], function (JsonObjectDump, NotificationService) {
 	return {
-		JsonObjectDump: JsonObjectDump
+		JsonObjectDump: JsonObjectDump,
+		NotificationService: NotificationService
+
 	}
 });

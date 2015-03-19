@@ -33,6 +33,8 @@ define([
 			this.player.render(this.cursor);
 		}.bind(this));
 
+		this.messenger = new ui.NotificationService();
+
 		/**
 		 * Describes the playable environment: tiles, distances, areas
 		 * @type {World}
@@ -41,7 +43,7 @@ define([
 		this.ponyWorld = new World(this);
 		this.darkWorld = new World(this);
 		this.world = this.ponyWorld;
-
+		this.generateTilesOnUnsaturatedEdges(10);
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
 		 * Future: interact, say

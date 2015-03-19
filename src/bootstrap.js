@@ -15,6 +15,7 @@ require.config({
 
 		{ name: 'core',                     location: 'packages/core/src'},
 		{ name: 'ui',            location: 'packages/ui/src'},
+		{ name: 'language',            location: 'packages/language/src'},
 
 	]
 

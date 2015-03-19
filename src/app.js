@@ -11,7 +11,7 @@ require([
 	Application.prototype.constructor = Application;
 
 	var app = new Application();
-	//app.generateTilesOnUnsaturatedEdges(50);
+	app.generateTilesOnUnsaturatedEdges(50);
 
 	app.renderer.render();
 

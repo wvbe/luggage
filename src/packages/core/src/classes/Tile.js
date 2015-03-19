@@ -1,5 +1,8 @@
 define([], function() {
 
+	// Must be known in order to produce a valid color range for all possible tiles
+	var MAX_TILE_Z = 10;
+
 	function Tile(x, y, z) {
 		this.id = this.getIdForCoordinates(x, y);
 		this.x = Math.round(x);
@@ -7,6 +10,7 @@ define([], function() {
 		this.z = Math.round(z || 0);//0.5 * Math.random(); // at sea level, not in use for now
 
 		this.bgColor = this.getFillRgb();
+
 		this.fgColor = this.bgColor.map(function (val) {
 			return Math.round(val * 0.7);
 		});
@@ -113,9 +117,9 @@ define([], function() {
 
 	Tile.prototype.getFillRgb = function () {
 		return [
-			100 + 25 * this.z,
-			100 + 25 * this.z,
-			100 + 25 * this.z
+			100 + 100/MAX_TILE_Z * this.z,
+			100 + 100/MAX_TILE_Z * this.z,
+			100 + 100/MAX_TILE_Z * this.z
 //			70 + 10 * Math.random(),
 //			140 + 40 * Math.random(),
 //			60 + 10 * Math.random()

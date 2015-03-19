@@ -112,22 +112,23 @@ define([
 	};
 
 	/**
-	 * Render a vertically standing plane, standing on baseline z, from (xa,ya) to (xb,yb), being height high.
+	 * Render a vertically standing plane, standing on baseline z, from (xa,ya,za) to (xb,yb,zb), being height high.
 	 * @param xa
 	 * @param ya
-	 * @param z
+	 * @param za
 	 * @param xb
 	 * @param yb
+	 * @param zb
 	 * @param height
 	 */
-	Renderer.prototype.fillVerticalPlane = function (xa, ya, z, xb, yb, height) {
+	Renderer.prototype.fillVerticalPlane = function (xa, ya, za, xb, yb, zb, height) {
 
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(xa, ya, z),
-			this.pixelForCoordinates(xa, ya, z + height),
-			this.pixelForCoordinates(xb, yb, z + height),
-			this.pixelForCoordinates(xb, yb, z)
+			this.pixelForCoordinates(xa, ya, za),
+			this.pixelForCoordinates(xa, ya, za + height),
+			this.pixelForCoordinates(xb, yb, zb + height),
+			this.pixelForCoordinates(xb, yb, zb)
 		].forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
@@ -145,7 +146,7 @@ define([
 	 * @param height
 	 */
 	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
-		this.fillVerticalPlane(x, y, z, x + length, y, height);
+		this.fillVerticalPlane(x, y, z, x + length, y, z, height);
 	};
 
 	/**
@@ -157,7 +158,7 @@ define([
 	 * @param height
 	 */
 	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
-		this.fillVerticalPlane(x, y, z, x, y + length, height);
+		this.fillVerticalPlane(x, y, z, x, y + length, z, height);
 	};
 
 

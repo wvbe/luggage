@@ -1,11 +1,14 @@
 define([
-	'tiny-emitter'
-], function(EventEmitter) {
+	'tiny-emitter',
+	'language'
+], function(EventEmitter, language) {
 
 	function Player(app, tile) {
 		EventEmitter.call(this);
 		// Player location
 		this.tile = tile;
+		this.channel = app.messenger.create('player-channel')
+			.bindToListElement(document.getElementById('messenger'));
 	}
 
 	Player.prototype = Object.create(EventEmitter.prototype);
@@ -15,14 +18,39 @@ define([
 		var tile = world.tiles.get(this.tile.getIdForCoordinates(this.tile.x + x, this.tile.y + y));
 
 		// If tile does not exist, stop
-		if(!tile)
+		if(!tile) {
+			this.yikes(language.player.CANNOT_MOVE__EMPTY_TILE);
 			return;
+		}
+
+		var dz = tile.z - this.tile.z;
+		if(dz > 3) {
+			this.hmm(language.player.CANNOT_MOVE__TOO_STEEP_UP, tile.z - this.tile.z);
+			return;
+		}
+
+		if(dz < -3) {
+			this.doh(language.player.CANNOT_MOVE__TOO_STEEP_DOWN,  Math.abs(tile.z - this.tile.z));
+			return;
+		}
 
 		// Save as new player location and pan world to it
 		this.tile = tile;
 
 		// @TODO: Move this to a callback/even
 		this.emit('move', this.tile);
+	};
+
+	Player.prototype.doh = function (message) {
+		this.channel.logMessageOfType('doh', message);
+	};
+
+	Player.prototype.hmm = function (message) {
+		this.channel.logMessageOfType('hmm', message);
+	};
+
+	Player.prototype.yikes = function (message) {
+		this.channel.logMessageOfType('yikes', message);
 	};
 
 	Player.prototype.setKeyBinds = function (world) {
