@@ -211,10 +211,5 @@ define([
 		return a.y < b.y ? 1 : -1;
 	}
 
-	function normalizeColorCode (color) {
-		if(Array.isArray(color))
-			color = 'rgb' + (color.length === 4 ? 'a' : '') + '(' + color.map(function(val, i) { return i < 3 ? Math.round(val) : val; }).join(',') + ')';
-		return color;
-	}
 	return Renderer;
 });

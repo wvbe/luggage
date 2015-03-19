@@ -1,12 +1,13 @@
 define([
 	'ui',
-
+	'Color',
 	'./classes/World',
 	'./classes/Tile',
 	'./classes/Renderer',
 	'./classes/Player'
 ], function (
 	ui,
+	Color,
 
 	World,
 	Tile,
@@ -47,9 +48,18 @@ define([
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.tiles.list().forEach(function(t) {
+		var worldTiles = this.world.tiles;
+		worldTiles.list().forEach(function(t) {
 			t.fillColor = t.getFillRgb();
-			//t.z = Math.round(t.z);
+
+			if(t.z <= 2 && t.getUnfilledNeighbours(worldTiles).length) {
+				var beachColor = new Color({
+					hue: 40,
+					saturation: 45,
+					lightness: 90
+				});
+				t.fillColor = t.fillColor.blend(beachColor, 0.1 + 0.3 * (1 - t.z/2));
+			}
 		});
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move

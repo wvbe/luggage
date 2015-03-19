@@ -95,9 +95,13 @@ define([
 
 	Tile.prototype.getFillRgb = function () {
 		return new Color({
-			hue: 82,
-			saturation: 0.5,
-			lightness: 0.2 + 0.5 * Math.pow(this.z/MAX_TILE_Z, 1.5)
+			hue: this.z <= 2 ? 42 : 82,
+			saturation: this.z < 8
+				? 0.5
+				: 0,
+			lightness: this.z < 8
+				? 0.2 + 0.5 * Math.pow(this.z/MAX_TILE_Z, 1.5)
+				: 0.8
 		});
 	};
 
