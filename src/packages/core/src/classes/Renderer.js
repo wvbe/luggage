@@ -68,8 +68,8 @@ define([
 	 */
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = typeof x === 'object' && !!x
-			? this.pixelForCoordinates(x.x, x.y, 0, true)
-			: this.pixelForCoordinates(x, y, 0 || 0, true);
+			? this.pixelForCoordinates(x.x + 0.5, x.y + 0.5, 0, true)
+			: this.pixelForCoordinates(x + 0.5, y + 0.5, 0 || 0, true);
 
 		this.setOffset(
 			-coords[0],

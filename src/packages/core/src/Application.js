@@ -13,7 +13,9 @@ define([
 	Renderer,
 	Player
 ) {
-	var PARALLAX_MODIFIER = -0.1;
+	var PARALLAX_MODIFIER = -0.1,
+		SCROLL_ZOOM_SPEED = 0.8;
+
 	function Application() {
 
 		this.World = World;
@@ -84,19 +86,19 @@ define([
 
 		// Call the renderer resize fn once, now that we have both app.world and app.player
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
-//		this.renderer.onResize();
-//		this.cursor.onResize();
+		this.renderer.onResize();
+		this.cursor.onResize();
+		this.renderer.panToTile(this.player.tile);
+		this.cursor.render();
 
 		// @TODO: Do this way more nicely, bitch
 		// Zooms the viewport in and out on mousewheel action
-		var SCROLL_ZOOM_SPEED = 0.8;
 		document.body.addEventListener('mousewheel', function (e) {
 			window.TILE_SIZE = Math.abs(window.TILE_SIZE * (e.wheelDelta < 0 ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED));
 			window.TILE_HEIGHT = window.TILE_SIZE/6;
 			this.renderer.panToTile(this.player.tile);
 			this.renderer.clear();
 			this.renderer.render();
-			this.cursor.panToTile(this.player.tile);
 			this.cursor.clear();
 			this.cursor.render();
 		}.bind(this));

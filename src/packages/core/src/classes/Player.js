@@ -56,8 +56,8 @@ define([
 		renderer.setFillColor('#fff');
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
-			0.5, // Positioned on the middle...
-			0.5, // ... of the x and y of tile
+			0, // Positioned on the middle...
+			0, // ... of the x and y of tile
 			this.tile.z + sphereRadius, // Center is on same tile z + it's own radius
 			sphereRadius
 		);
