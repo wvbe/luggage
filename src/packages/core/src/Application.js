@@ -40,10 +40,16 @@ define([
 		 * @type {World}
 		 */
 		// @TODO must absolutely clean this up
-		this.ponyWorld = new World(this);
-		this.darkWorld = new World(this);
-		this.world = this.ponyWorld;
-		this.generateTilesOnUnsaturatedEdges(10);
+		this.world = new World(this);
+		this.generateTilesOnUnsaturatedEdges(50);
+		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.tiles.list().forEach(function(t) {
+			t.z = Math.round(t.z);
+		});
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
 		 * Future: interact, say

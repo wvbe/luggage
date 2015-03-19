@@ -56,18 +56,39 @@ define([
 			if(tile.isSaturated(this.tiles, saturationThresholdOverride))
 				return;
 
-			//shuffle(tile.getUnfilledNeighbours(this.tiles)).forEach(function (id) {
-			tile.getUnfilledNeighbours(this.tiles).forEach(function (id) {
+			shuffle(tile.getUnfilledNeighbours(this.tiles)).forEach(function (id) {
+			//tile.getUnfilledNeighbours(this.tiles).forEach(function (id) {
 				var coordinates = tile.getCoordinatesForId(id);
 				this.generateNewTile(coordinates);
 			}.bind(this));
 		}.bind(this));
 	};
 
+	World.prototype.relaxTiles = function (registry, amount) {
+		if(!amount)
+			amount = 0.2;
+		var tiles = this.tiles.list(),
+			iamount = 1 - amount;
+		tiles.forEach(function (tile) {
+			tile.getNeighbours(registry).forEach(function (otherTile) {
+				var highestZ = tile.z > otherTile.z ? tile.z : otherTile.z;
+				otherTile.z = iamount * otherTile.z + amount * highestZ;
+				tile.z      = amount * highestZ + iamount * tile.z;
+			});
+		});
+	};
+
 	var built = 1;
 	World.prototype.generateNewTile = function (coordinates) {
-		this.tiles.set(new this.Tile(coordinates[0], coordinates[1],
-			Math.abs(10 * Math.cos(built/100))
+		var manhattanDistanceFromCenter = Math.abs(coordinates[0]) + Math.abs(coordinates[1]);
+		this.tiles.set(new this.Tile(
+			coordinates[0],
+			coordinates[1],
+			Math.pow((3
+				- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
+				+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
+				- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
+			)/6, 9) * 64
 		));
 		++built;
 	};

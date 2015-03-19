@@ -5,7 +5,7 @@ define([
 
 	// @TODO: Not so ugly plz
 	window.TILE_SIZE = 32;
-	window.TILE_HEIGHT = window.TILE_SIZE/16;
+	window.TILE_HEIGHT = window.TILE_SIZE/8;
 
 
 	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
