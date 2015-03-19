@@ -86,16 +86,16 @@ define([], function() {
 			this.y,
 			-1,
 			1,
-				1 + this.z
+			1 + this.z
 		);
 
 		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
 		renderer.fillNorthToSouthPlane(
-			this.x,
+			this.x + 1,
 			this.y,
 			-1,
 			1,
-				1 + this.z
+			1 + this.z
 		);
 
 		renderer.setFillColor(this.bgColor);
@@ -107,7 +107,8 @@ define([], function() {
 			1
 		);
 
-		//this.renderRandomArtifact(renderer);
+		if(this.saturationThreshold >= 6)
+			this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.getFillRgb = function () {
@@ -124,19 +125,20 @@ define([], function() {
 	};
 
 	Tile.prototype.renderRandomArtifact = function (renderer) {
-		var buildingOffset = [
-				0,
-				0,
+		var buildingSize = [
+				0.05 + Math.random() * 0.2,
+				0.05 + Math.random() * 0.2,
+				0.2 + Math.random() * 0.3
 			],
-			buildingSize = [
-				1,
-				0.4,
-				1
-			];
+			buildingOffset = [
+				Math.random() * (1 - buildingSize[0]),
+				Math.random() * (1 - buildingSize[1])
+			]
+			;
 		renderer.setFillColor(this.bgColor.map(function(val) { return val * 1.2; }));
 		renderer.fillEastToWestPlane(
-			this.x - 0.5 + buildingOffset[0],
-			this.y - 0.5 + buildingOffset[1],
+			this.x + buildingOffset[0],
+			this.y + buildingOffset[1],
 			this.z,
 			buildingSize[0],
 			buildingSize[2]
@@ -144,8 +146,8 @@ define([], function() {
 
 		renderer.setFillColor(this.bgColor.map(function(val) { return val * 0.6; }));
 		renderer.fillNorthToSouthPlane(
-			this.x - 0.5 + buildingOffset[0],
-			this.y - 0.5 + buildingOffset[1],
+			this.x + buildingOffset[0] + buildingSize[0],
+			this.y + buildingOffset[1],
 			this.z,
 			buildingSize[1],
 			buildingSize[2]
@@ -153,8 +155,8 @@ define([], function() {
 
 		renderer.setFillColor(this.bgColor);
 		renderer.fillFlatPlane(
-			this.x - 0.5 + buildingOffset[0],
-			this.y - 0.5 + buildingOffset[1],
+			this.x + buildingOffset[0],
+			this.y + buildingOffset[1],
 			this.z + buildingSize[2],
 			buildingSize[0],
 			buildingSize[1]

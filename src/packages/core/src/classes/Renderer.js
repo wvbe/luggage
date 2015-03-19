@@ -111,13 +111,23 @@ define([
 		this.context.stroke();
 	};
 
-	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
+	/**
+	 * Render a vertically standing plane, standing on baseline z, from (xa,ya) to (xb,yb), being height high.
+	 * @param xa
+	 * @param ya
+	 * @param z
+	 * @param xb
+	 * @param yb
+	 * @param height
+	 */
+	Renderer.prototype.fillVerticalPlane = function (xa, ya, z, xb, yb, height) {
+
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(x, y, z + height),
-			this.pixelForCoordinates(x + length, y, z + height),
-			this.pixelForCoordinates(x + length, y, z),
-			this.pixelForCoordinates(x, y, z)
+			this.pixelForCoordinates(xa, ya, z),
+			this.pixelForCoordinates(xa, ya, z + height),
+			this.pixelForCoordinates(xb, yb, z + height),
+			this.pixelForCoordinates(xb, yb, z)
 		].forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
@@ -126,21 +136,30 @@ define([
 		this.context.stroke();
 	};
 
-
-	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
-		this.context.beginPath();
-		[
-			this.pixelForCoordinates(x + 1, y, z + height), // +- rechts onder
-			this.pixelForCoordinates(x + 1, y, z), // +- rechts onder*,
-			this.pixelForCoordinates(x + 1, y + length, z), // ++ rechts boven*
-			this.pixelForCoordinates(x + 1, y + length, z + height), // ++ rechts boven
-		].forEach(function (coords, i) {
-			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
-		}.bind(this));
-		this.context.closePath();
-		this.context.fill();
-		this.context.stroke();
+	/**
+	 * Ease-of-use for a fillVerticalPlane() oriented west-to-east like a latitude, parallel
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param length
+	 * @param height
+	 */
+	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height) {
+		this.fillVerticalPlane(x, y, z, x + length, y, height);
 	};
+
+	/**
+	 * Ease-of-use for a fillVerticalPlane() oriented north-to-south like a longitude, meridian
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param length
+	 * @param height
+	 */
+	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height) {
+		this.fillVerticalPlane(x, y, z, x, y + length, height);
+	};
+
 
 	Renderer.prototype.setFillColor = function(color) {
 		if(Array.isArray(color))
