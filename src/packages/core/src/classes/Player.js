@@ -1,12 +1,15 @@
 define([
+	'Color',
 	'tiny-emitter',
 	'language'
-], function(EventEmitter, language) {
+], function(Color, EventEmitter, language) {
 
 	function Player(app, tile) {
 		EventEmitter.call(this);
 		// Player location
 		this.tile = tile;
+		this.fillColor = new Color([255, 255, 255]);
+		this.strokeColor = new Color([0, 0, 0]);
 		this.channel = app.messenger.create('player-channel')
 			.bindToListElement(document.getElementById('messenger'));
 	}
@@ -81,13 +84,14 @@ define([
 	 * @param {Renderer} renderer
 	 */
 	Player.prototype.render = function (renderer) {
-		renderer.setFillColor('#fff');
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
 			0, // Positioned on the middle...
 			0, // ... of the x and y of tile
 			this.tile.z + sphereRadius, // Center is on same tile z + it's own radius
-			sphereRadius
+			sphereRadius,
+			this.strokeColor,
+			this.fillColor
 		);
 	};
 
