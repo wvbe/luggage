@@ -48,7 +48,9 @@ define([
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.relaxTiles(this.world.tiles, 0.1);
 		this.world.tiles.list().forEach(function(t) {
-			t.z = Math.round(t.z);
+
+			t.bgColor = t.getFillRgb();
+			//t.z = Math.round(t.z);
 		});
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move

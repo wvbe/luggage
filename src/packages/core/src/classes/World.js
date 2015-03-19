@@ -70,10 +70,14 @@ define([
 		var tiles = this.tiles.list(),
 			iamount = 1 - amount;
 		tiles.forEach(function (tile) {
-			tile.getNeighbours(registry).forEach(function (otherTile) {
-				var highestZ = tile.z > otherTile.z ? tile.z : otherTile.z;
-				otherTile.z = iamount * otherTile.z + amount * highestZ;
-				tile.z      = amount * highestZ + iamount * tile.z;
+			tile.getAllNeighbours(registry).forEach(function (otherTile) {
+				if(otherTile) {
+					var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
+					otherTile.z = iamount * otherTile.z + amount * highestZ;
+					tile.z = amount * highestZ + iamount * tile.z;
+				} else {
+					tile.z = iamount * iamount * iamount * tile.z;
+				}
 			});
 		});
 	};

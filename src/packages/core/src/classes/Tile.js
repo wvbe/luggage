@@ -1,7 +1,7 @@
 define([], function() {
 
 	// Must be known in order to produce a valid color range for all possible tiles
-	var MAX_TILE_Z = 8;
+	var MAX_TILE_Z = 12;
 
 	function Tile(x, y, z) {
 		this.id = this.getIdForCoordinates(x, y);
@@ -9,11 +9,10 @@ define([], function() {
 		this.y = Math.round(y);
 		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
 
-		this.bgColor = this.getFillRgb();
 
 		// Will not be open to new generated neighbours once at least this number of neighbors is already present
 		//this.saturationThreshold = Math.round(3 + 3 * this.z/7);
-		this.saturationThreshold = 6;
+		this.saturationThreshold = 3 + Math.random() * 3;
 
 		//this.saturationThreshold = Math.round(1 + Math.random() * 7);
 		// this.saturationThreshold = 6; // Yields an octagon-ish shape
@@ -114,12 +113,9 @@ define([], function() {
 
 	Tile.prototype.getFillRgb = function () {
 		return [
-			100 + 100/MAX_TILE_Z * this.z,
-			100 + 100/MAX_TILE_Z * this.z,
-			100 + 100/MAX_TILE_Z * this.z
-//			70 + 10 * Math.random(),
-//			140 + 40 * Math.random(),
-//			60 + 10 * Math.random()
+			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5),
+			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5),
+			50 + 150 * Math.pow(this.z/MAX_TILE_Z, 1.5)
 		].map(function (val) {
 			return Math.round(val);
 		});
