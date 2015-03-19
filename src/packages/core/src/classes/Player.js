@@ -24,12 +24,12 @@ define([
 		}
 
 		var dz = tile.z - this.tile.z;
-		if(dz > 4) {
+		if(dz > 2) {
 			this.hmm(language.player.CANNOT_MOVE__TOO_STEEP_UP, tile.z - this.tile.z);
 			return;
 		}
 
-		if(dz < -4) {
+		if(dz < -2) {
 			this.doh(language.player.CANNOT_MOVE__TOO_STEEP_DOWN,  Math.abs(tile.z - this.tile.z));
 			return;
 		}

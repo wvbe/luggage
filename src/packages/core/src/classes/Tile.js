@@ -107,8 +107,11 @@ define([], function() {
 			1
 		);
 
-//		if(this.saturationThreshold >= 6)
-//			this.renderRandomArtifact(renderer);
+		if(
+			(this.saturationThreshold >= 5.8 && this.z < 5)
+			||(this.saturationThreshold >= 3 && this.z < 1)
+		)
+			this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.getFillRgb = function () {
