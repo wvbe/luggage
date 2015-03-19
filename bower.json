@@ -16,7 +16,7 @@
   "dependencies": {
     "requirejs": "~2.1.15",
     "requirejs-text": "~2.0.12",
-    "object-store": "git@github.com:wvbe/object-store.git",
+    "object-store": "wvbe/object-store",
     "tiny-emitter": "~1.0.0"
   }
 }
