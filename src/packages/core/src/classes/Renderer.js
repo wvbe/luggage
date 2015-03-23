@@ -185,19 +185,10 @@ define([
 
 	/**
 	 *
+	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
 	 */
-	Renderer.prototype.renderAllTiles = function (world) {
-		var renderer = this.renderer;
-
-		world.tiles.list()
-			.sort(furthestTilesFirst)
-			.forEach(function (tile) {
-				tile.render(renderer);
-			});
-	};
-
-	Renderer.prototype.renderAroundTile = function (world, tile, distance) {
-		world.getAreaAroundPosition(tile, distance)
+	Renderer.prototype.renderTiles = function (tiles) {
+		tiles
 			.sort(furthestTilesFirst)
 			.forEach(function (tile) {
 				tile.render(this);

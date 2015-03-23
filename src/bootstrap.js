@@ -17,8 +17,9 @@ require.config({
 	'packages': [
 
 		{ name: 'core',                     location: 'packages/core/src'},
+		{ name: 'util',            location: 'packages/util/src'},
 		{ name: 'ui',            location: 'packages/ui/src'},
-		{ name: 'language',            location: 'packages/language/src'},
+		{ name: 'language',            location: 'packages/language/src'}
 
 	],
 	shim: {

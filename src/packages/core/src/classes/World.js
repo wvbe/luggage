@@ -1,9 +1,11 @@
 define([
 	'tiny-emitter',
-	'object-store'
+	'object-store',
+	'util'
 ], function(
 	EventEmitter,
-	ObjectStore
+	ObjectStore,
+	util
 ) {
 
 	function World(app) {
@@ -23,30 +25,38 @@ define([
 	World.prototype.constructor = World;
 
 	// @TODO: The delta X & Y's (and their render order) can be cached for every distance.
-	World.prototype.getAreaAroundPosition = function (center, distance) {
+	World.prototype.getAreaAroundPosition = function (center, maximumDistance, minimumDistance, getEmptyPositionsInstead) {
 		var list = [],
 			store = this.tiles;
 
+		minimumDistance = minimumDistance || 0; // Inclusive, and so is maximumDistance
+
 		// Get only tiles within manhattan distance
-		for(var y = center.y - distance; y <= center.y + distance; ++y) {
-			for(var x = center.x - distance; x <= center.x + distance; ++x) {
+		for(var y = center.y - maximumDistance; y <= center.y + maximumDistance; ++y) {
+			for(var x = center.x - maximumDistance; x <= center.x + maximumDistance; ++x) {
+				var tileDistance = Math.floor(util.pythagoras(x - center.x, y - center.y));
+				if(tileDistance > maximumDistance || tileDistance < minimumDistance)
+					continue;
+
 				var tile = store.get(x + ',' + y);
-				if(tile)
+				if(tile && !getEmptyPositionsInstead)
 					list.push(tile);
+				if(getEmptyPositionsInstead && !tile)
+					list.push(x + ',' + y);
 			}
 		}
-
-		// Filter to pythagoran distance
-		return list.filter(function (tile) {
-			return Math.floor(pythagoras(tile.x - center.x, tile.y - center.y)) <= distance;
-		});
+		return list;
 	};
 
-	function pythagoras (x, y) {
-		return Math.sqrt(x*x + y*y);
-	}
+	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
+		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
+		tileIds.forEach(function (tileId) {
+			this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+		}.bind(this));
+	};
+
 	/**
-	 *
+	 * Generates new neighbour tiles for *unsaturated* tiles
 	 */
 	World.prototype.generateNewTiles = function (saturationThresholdOverride) {
 		var tiles = this.tiles.list();
@@ -55,15 +65,16 @@ define([
 		tiles.forEach(function (tile) {
 			if(tile.isSaturated(this.tiles, saturationThresholdOverride))
 				return;
-
-			shuffle(tile.getUnfilledNeighbours(this.tiles)).forEach(function (id) {
-			//tile.getUnfilledNeighbours(this.tiles).forEach(function (id) {
-				var coordinates = tile.getCoordinatesForId(id);
-				this.generateNewTile(coordinates);
-			}.bind(this));
+			this.generateTilesOnPositions(tile.getUnfilledNeighbours(this.tiles));
 		}.bind(this));
 	};
 
+	World.prototype.getPotentialTilesAroundPosition = function (center, distance, minimumDistance) {
+		return this.getAreaAroundPosition(center, distance, minimumDistance, true)
+			.filter(function(tile) {
+				console.log(tile);
+			});
+	};
 	World.prototype.relaxTiles = function (registry, amount) {
 		if(!amount)
 			amount = 0.2;
@@ -105,26 +116,8 @@ define([
 	World.prototype.getSpawnTile = function () {
 		return this.tiles.get('0,0');
 	};
-	
 
-	function shuffle(array) {
-		var currentIndex = array.length, temporaryValue, randomIndex ;
 
-		// While there remain elements to shuffle...
-		while (0 !== currentIndex) {
-
-			// Pick a remaining element...
-			randomIndex = Math.floor(Math.random() * currentIndex);
-			currentIndex -= 1;
-
-			// And swap it with the current element.
-			temporaryValue = array[currentIndex];
-			array[currentIndex] = array[randomIndex];
-			array[randomIndex] = temporaryValue;
-		}
-
-		return array;
-	}
 
 	return World;
 });

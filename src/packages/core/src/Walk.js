@@ -17,7 +17,7 @@ define([
 	var PARALLAX_MODIFIER = -0.1,
 		SCROLL_ZOOM_SPEED = 0.8;
 
-	function Application() {
+	function WalkExperiment() {
 
 		this.World = World;
 		this.Tile = Tile;
@@ -26,8 +26,7 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, 13, 7));
-			this.renderer.renderTiles(this.world.getAreaAroundPosition(this.player.tile, 7));
+			this.renderer.renderAroundTile(this.world, this.player.tile, 7); // @TODO: Move knwledge of app.player out of here
 		}.bind(this));
 
 		// @TODO: Remove direct reference to a canvas element here
