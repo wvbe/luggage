@@ -43,11 +43,11 @@ define([
 		// @TODO must absolutely clean this up
 		this.world = new World(this);
 		this.generateTilesOnUnsaturatedEdges(50);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
+		this.world.relax(this.world.tiles, 0.1);
+		this.world.relax(this.world.tiles, 0.1);
+		this.world.relax(this.world.tiles, 0.1);
+		this.world.relax(this.world.tiles, 0.1);
+		this.world.relax(this.world.tiles, 0.1);
 		var worldTiles = this.world.tiles;
 		worldTiles.list().forEach(function(t) {
 			t.fillColor = t.getFillRgb();

@@ -26,8 +26,30 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, 13, 7));
-			this.renderer.renderTiles(this.world.getAreaAroundPosition(this.player.tile, 7));
+			var registry = this.world.tiles,
+				renderableTiles = this.world.getPotentialTilesAroundPosition(this.player.tile, 9, 7),
+				regeneratableTiles = renderableTiles.filter(function (tile) {
+					return tile instanceof Tile;
+				});
+
+			this.world.generateTilesOnPositions(renderableTiles.filter(function (tile) {
+				return !(tile instanceof Tile);
+			}));
+			this.world.relaxTiles(regeneratableTiles, 0.1, true);
+			regeneratableTiles.forEach(function (tile) {
+				tile.updateColorsForRegistry(registry);
+			});
+
+
+			this.world.getAreaAroundPosition(this.player.tile, 11, 10, true, false).forEach(function (tile) {
+				if(!(tile instanceof Tile))
+					return;
+				this.world.tiles.delete(tile.x + ',' + tile.y);
+				console.log('deleted');
+			}.bind(this));
+
+			this.renderer.renderTiles(this.world.getAreaAroundPosition(this.player.tile, 6));
+
 		}.bind(this));
 
 		// @TODO: Remove direct reference to a canvas element here
@@ -43,24 +65,13 @@ define([
 		 */
 		// @TODO must absolutely clean this up
 		this.world = new World(this);
-		this.generateTilesOnUnsaturatedEdges(50);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		this.world.relaxTiles(this.world.tiles, 0.1);
-		var worldTiles = this.world.tiles;
-		worldTiles.list().forEach(function(t) {
-			t.fillColor = t.getFillRgb();
 
-			if(t.z <= 2 && t.getUnfilledNeighbours(worldTiles).length) {
-				var beachColor = new Color({
-					hue: 40,
-					saturation: 45,
-					lightness: 90
-				});
-				t.fillColor = t.fillColor.blend(beachColor, 0.1 + 0.3 * (1 - t.z/2));
-			}
+		var worldTiles = this.world.tiles;
+		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, 8));
+		this.world.relaxAllTiles( 0.1);
+		this.world.relaxAllTiles( 0.1);
+		worldTiles.list().forEach(function(tile) {
+			tile.updateColorsForRegistry(worldTiles);
 		});
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move

@@ -13,6 +13,8 @@ define([
 		this.y = Math.round(y);
 		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
 
+		this.regens = 0;
+
 		this.fillColor = null;
 		this.strokeColor = new Color([0, 0, 0]);
 
@@ -88,8 +90,7 @@ define([
 	Tile.prototype.render = function (renderer) {
 		renderer.fillBox(this.x, this.y, -1, 1, 1, 1 + this.z, this.strokeColor, this.fillColor.lightenByRatio(0.3));
 
-		if((this.saturationThreshold >= 5.8 && this.z < 5)
-			||(this.saturationThreshold >= 3 && this.z < 1))
+		if((this.saturationThreshold >= 3 && this.z > 3))
 			this.renderRandomArtifact(renderer);
 	};
 
@@ -104,6 +105,19 @@ define([
 				: 0.8
 		});
 	};
+	
+	Tile.prototype.updateColorsForRegistry = function (registry) {
+		this.fillColor = this.getFillRgb();
+
+		if(this.z <= 2 && this.getUnfilledNeighbours(registry).length) {
+			var beachColor = new Color({
+				hue: 40,
+				saturation: 45,
+				lightness: 90
+			});
+			this.fillColor = this.fillColor.blend(beachColor, 0.1 + 0.3 * (1 - this.z/2));
+		}
+	}
 
 	Tile.prototype.renderRandomArtifact = function (renderer) {
 		var buildingSize = [

@@ -25,7 +25,7 @@ define([
 	World.prototype.constructor = World;
 
 	// @TODO: The delta X & Y's (and their render order) can be cached for every distance.
-	World.prototype.getAreaAroundPosition = function (center, maximumDistance, minimumDistance, getEmptyPositionsInstead) {
+	World.prototype.getAreaAroundPosition = function (center, maximumDistance, minimumDistance, includeEmptyPositions, useManhattanDistance) {
 		var list = [],
 			store = this.tiles;
 
@@ -34,14 +34,16 @@ define([
 		// Get only tiles within manhattan distance
 		for(var y = center.y - maximumDistance; y <= center.y + maximumDistance; ++y) {
 			for(var x = center.x - maximumDistance; x <= center.x + maximumDistance; ++x) {
-				var tileDistance = Math.floor(util.pythagoras(x - center.x, y - center.y));
-				if(tileDistance > maximumDistance || tileDistance < minimumDistance)
+				var tileDistance = useManhattanDistance
+					? Math.abs(x - center.x) + Math.abs(y - center.y)
+					: Math.floor(util.pythagoras(x - center.x, y - center.y));
+				if (tileDistance > maximumDistance || tileDistance < minimumDistance)
 					continue;
 
 				var tile = store.get(x + ',' + y);
-				if(tile && !getEmptyPositionsInstead)
+				if (tile)
 					list.push(tile);
-				if(getEmptyPositionsInstead && !tile)
+				else if (includeEmptyPositions)
 					list.push(x + ',' + y);
 			}
 		}
@@ -51,7 +53,8 @@ define([
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		tileIds.forEach(function (tileId) {
-			this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+			var tile = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+			tile.updateColorsForRegistry(this.tiles);
 		}.bind(this));
 	};
 
@@ -70,42 +73,47 @@ define([
 	};
 
 	World.prototype.getPotentialTilesAroundPosition = function (center, distance, minimumDistance) {
-		return this.getAreaAroundPosition(center, distance, minimumDistance, true)
-			.filter(function(tile) {
-				console.log(tile);
-			});
+		return this.getAreaAroundPosition(center, distance, minimumDistance, true, false);
 	};
-	World.prototype.relaxTiles = function (registry, amount) {
+
+	World.prototype.relaxTiles = function (tiles, amount, ignoreEmptyPositions) {
+		console.log('Relaxing all tiles');
 		if(!amount)
 			amount = 0.2;
-		var tiles = this.tiles.list(),
-			iamount = 1 - amount;
+		var iamount = 1 - amount;
 		tiles.forEach(function (tile) {
-			tile.getAllNeighbours(registry).forEach(function (otherTile) {
+			tile.getAllNeighbours(this.tiles).forEach(function (otherTile) {
 				if(otherTile) {
-					var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
-					otherTile.z = iamount * otherTile.z + amount * highestZ;
-					tile.z = amount * highestZ + iamount * tile.z;
-				} else {
+					//var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
+					otherTile.z = iamount * otherTile.z + amount * tile.z;
+					tile.z = amount * otherTile.z + iamount * tile.z;
+				} else if (!ignoreEmptyPositions) {
 					tile.z = iamount * iamount * iamount * tile.z;
 				}
 			});
-		});
+		}.bind(this));
 	};
 
-	var built = 1;
+	World.prototype.relaxAllTiles = function (amount) {
+		return this.relaxTiles(this.tiles.list(), amount, false);
+	};
+
 	World.prototype.generateNewTile = function (coordinates) {
 		var manhattanDistanceFromCenter = Math.abs(coordinates[0]) + Math.abs(coordinates[1]);
-		this.tiles.set(new this.Tile(
+
+		return this.tiles.set(new this.Tile(
 			coordinates[0],
 			coordinates[1],
-			Math.pow((3
-				- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
-				+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
-				- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
-			)/6, 9) * 64
+			Math.pow((4
+				+ Math.random()
+				+ Math.random()
+				+ Math.random()
+				+ Math.random()
+				//- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
+				//+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
+				//- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
+			)/8, 13) * 128
 		));
-		++built;
 	};
 
 
