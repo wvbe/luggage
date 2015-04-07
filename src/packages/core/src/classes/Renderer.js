@@ -13,16 +13,17 @@ define([
 		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
 		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN);
 
+	var VIRTUAL_CAMERA_OFFSET = {
+		x: 0,
+		y: 0,
+		z: 0
+	};
 
 	function Renderer(canvasElement, renderCallback) {
 		this.canvas = canvasElement;
 		this.context = this.canvas.getContext('2d');
 		this.onResize();
 		this.render = renderCallback;
-		this.offset = {
-			x: 0,
-			y: 0
-		};
 		window.addEventListener('resize', this.onResize.bind(this));
 	}
 
@@ -54,11 +55,12 @@ define([
 	 * @param {Number} x
 	 * @param {Number} y
 	 */
-	Renderer.prototype.setOffset = function (x, y) {
-		this.offset = {
+	Renderer.prototype.setOffset = function (x, y, z) {
+		VIRTUAL_CAMERA_OFFSET = {
 			x: x,
-			y: y
-		}
+			y: y,
+			z: z
+		};
 	};
 	/**
 	 * Pan to the position of a tile
@@ -68,21 +70,29 @@ define([
 	 */
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = typeof x === 'object' && !!x
-			? this.pixelForCoordinates(x.x + 0.5, x.y + 0.5, 0, true)
-			: this.pixelForCoordinates(x + 0.5, y + 0.5, 0 || 0, true);
+			? this.pixelForCoordinates(
+				x.x + 0.5,
+				x.y + 0.5,
+				x.z,
+				true)
+			: this.pixelForCoordinates(
+				x + 0.5,
+				y + 0.5,
+				z,
+				true);
 
 		this.setOffset(
 			-coords[0],
 			-coords[1]
-		)
+		);
 	};
 
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
 		var rX = (x + y) * ISOMETRIC_COS,
 			rY = (x - y) * ISOMETRIC_SIN;
 		return [
-			(omitOffset ? 0 : this.offset.x + 0.5 * this.canvas.width)  + rX * TILE_SIZE,
-			(omitOffset ? 0 : this.offset.y + 0.5 * this.canvas.height) + rY * TILE_SIZE - TILE_HEIGHT * z
+			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x + 0.5 * this.canvas.width)  + rX * TILE_SIZE,
+			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y + 0.5 * this.canvas.height) + rY * TILE_SIZE - TILE_HEIGHT * z
 		];
 	};
 

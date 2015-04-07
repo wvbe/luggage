@@ -86,8 +86,8 @@ define([
 	Player.prototype.render = function (renderer) {
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
-			0, // Positioned on the middle...
-			0, // ... of the x and y of tile
+			this.tile.x + 0.5, // Positioned on the middle...
+			this.tile.y + 0.5, // ... of the x and y of tile
 			this.tile.z + sphereRadius, // Center is on same tile z + it's own radius
 			sphereRadius,
 			this.strokeColor,

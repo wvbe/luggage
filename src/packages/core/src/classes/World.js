@@ -37,6 +37,7 @@ define([
 				var tileDistance = useManhattanDistance
 					? Math.abs(x - center.x) + Math.abs(y - center.y)
 					: Math.floor(util.pythagoras(x - center.x, y - center.y));
+
 				if (tileDistance > maximumDistance || tileDistance < minimumDistance)
 					continue;
 

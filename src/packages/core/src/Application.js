@@ -91,7 +91,7 @@ define([
 		// Does parallax scrolling on the viewport
 		var viewportElement = document.getElementById('viewport');
 		this.player.on('move', function (tile) {
-			this.renderer.panToTile(tile);
+			this.renderer.panToTile(tile.x, tile.y, 0);
 			this.renderer.clear();
 			this.renderer.render();
 
@@ -107,6 +107,7 @@ define([
 		 * Describes UI behaviour. Doesn't have much to do with the game in itself
 		 * @type {Ui}
 		 */
+
 		this.ui = {
 			currentTile: new ui.JsonObjectDump(
 				document.getElementById('dump-current-tile'),
@@ -119,7 +120,7 @@ define([
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
 		this.renderer.onResize();
 		this.cursor.onResize();
-		this.renderer.panToTile(this.player.tile);
+		this.renderer.panToTile(this.player.tile.x, this.player.tile.y, 0);
 		this.cursor.render();
 
 		// @TODO: Do this way more nicely, bitch
