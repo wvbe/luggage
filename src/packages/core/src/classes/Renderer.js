@@ -4,20 +4,24 @@ define([
 
 
 	// @TODO: Not so ugly plz
-	window.TILE_SIZE = 32;
-	window.TILE_HEIGHT = window.TILE_SIZE/8;
 
 
 	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
 		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
 		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
-		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN);
+		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN); // the length of a diagonal, in pixels
+
+	var TILE_SIZE = 32,
+		TILE_HEIGHT = TILE_SIZE/6;
 
 	var VIRTUAL_CAMERA_OFFSET = {
-		x: 0,
-		y: 0,
-		z: 0
-	};
+			x: 0,
+			y: 0
+		},
+		ABSOLUTE_VIEWPORT_OFFSET = {
+			x: 0,
+			y: 0
+		};
 
 	function Renderer(canvasElement, renderCallback) {
 		this.canvas = canvasElement;
@@ -62,28 +66,49 @@ define([
 			z: z
 		};
 	};
+	Renderer.prototype.setViewportOffset = function (x, y) {
+		ABSOLUTE_VIEWPORT_OFFSET = {
+			x: -VIRTUAL_CAMERA_OFFSET.x - x,
+			y: -VIRTUAL_CAMERA_OFFSET.y - y
+		};
+		this.canvas.classList.add('transitioning');
+		this.canvas.style.top = ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
+		this.canvas.style.left = ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
+	};
 	/**
 	 * Pan to the position of a tile
 	 * @param {Number|Tile} x
 	 * @param {Number} [y]
 	 * @param {Number} [z] CURRENTLY IGNORED
 	 */
-	Renderer.prototype.panToTile = function (x, y, z) {
-		var coords = typeof x === 'object' && !!x
+	function normalizeCoords(x,y,z) {
+		return typeof x === 'object' && !!x
 			? this.pixelForCoordinates(
 				x.x + 0.5,
 				x.y + 0.5,
-				x.z,
-				true)
+			x.z,
+			true)
 			: this.pixelForCoordinates(
 				x + 0.5,
 				y + 0.5,
-				z,
-				true);
+			z,
+			true);
+	}
+
+	Renderer.prototype.panToTile = function (x, y, z) {
+		var coords = normalizeCoords.apply(this, arguments);
 
 		this.setOffset(
 			-coords[0],
 			-coords[1]
+		);
+	};
+	Renderer.prototype.panViewportToTile = function (x, y, z) {
+		var coords = normalizeCoords.apply(this, arguments);
+
+		this.setViewportOffset(
+			coords[0],
+			coords[1]
 		);
 	};
 

@@ -34,6 +34,8 @@ define([
 		// Get only tiles within manhattan distance
 		for(var y = center.y - maximumDistance; y <= center.y + maximumDistance; ++y) {
 			for(var x = center.x - maximumDistance; x <= center.x + maximumDistance; ++x) {
+				//
+
 				var tileDistance = useManhattanDistance
 					? Math.abs(x - center.x) + Math.abs(y - center.y)
 					: Math.floor(util.pythagoras(x - center.x, y - center.y));
@@ -51,7 +53,49 @@ define([
 		return list;
 	};
 
+	World.prototype.getTilesWithinRanges = function (center, borders, includeEmpty, includeTooClose, useManhattanDistance) {
+
+		var store = this.tiles,
+			maximumDistance = borders[0];
+
+		if(borders.length === 1)
+			includeTooClose = true;
+
+		var lists = [];
+		for(var b = 0; b < borders.length - (includeTooClose ? 0 : 1); ++b) {
+			lists.push([]);
+		}
+
+		// Get only tiles within manhattan distance
+		for(var y = center.y - maximumDistance; y <= center.y + maximumDistance; ++y) {
+			for(var x = center.x - maximumDistance; x <= center.x + maximumDistance; ++x) {
+				var distance = useManhattanDistance
+					? Math.abs(x - center.x) + Math.abs(y - center.y)
+					: util.pythagoras(x - center.x, y - center.y);
+
+				for(var j = borders.length - 1; j >= 0; --j) {
+					if(distance > borders[j]) {
+						continue;
+					}
+					if (j < borders.length - 1 || includeTooClose) {
+						var tile = store.get(x + ',' + y);
+						if (tile)
+							lists[j].push(tile);
+						else if (includeEmpty)
+							lists[j].push(x + ',' + y);
+					}
+
+					break;
+
+				}
+			}
+		}
+
+		return lists;
+	};
+
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
+		console.log('Regenerate', tileIds.length);
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		tileIds.forEach(function (tileId) {
 			var tile = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));

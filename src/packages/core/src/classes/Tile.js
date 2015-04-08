@@ -109,7 +109,7 @@ define([
 	Tile.prototype.updateColorsForRegistry = function (registry) {
 		this.fillColor = this.getFillRgb();
 
-		if(this.z <= 2 && this.getUnfilledNeighbours(registry).length) {
+		if(this.z <= 2 || this.getUnfilledNeighbours(registry).length) {
 			var beachColor = new Color({
 				hue: 40,
 				saturation: 45,

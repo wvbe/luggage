@@ -26,30 +26,9 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			var registry = this.world.tiles,
-				renderableTiles = this.world.getPotentialTilesAroundPosition(this.player.tile, 9, 7),
-				regeneratableTiles = renderableTiles.filter(function (tile) {
-					return tile instanceof Tile;
-				});
-
-			this.world.generateTilesOnPositions(renderableTiles.filter(function (tile) {
-				return !(tile instanceof Tile);
-			}));
-			this.world.relaxTiles(regeneratableTiles, 0.1, true);
-			regeneratableTiles.forEach(function (tile) {
-				tile.updateColorsForRegistry(registry);
-			});
-
-
-			this.world.getAreaAroundPosition(this.player.tile, 11, 10, true, false).forEach(function (tile) {
-				if(!(tile instanceof Tile))
-					return;
-				this.world.tiles.delete(tile.x + ',' + tile.y);
-				console.log('deleted');
-			}.bind(this));
-
-			this.renderer.renderTiles(this.world.getAreaAroundPosition(this.player.tile, 6));
-
+			var closestTiles = this.maintainTilesAroundPlayer();
+			this.renderer.renderTiles(closestTiles);
+			//this.renderer.renderTiles(this.world.tiles.list());
 		}.bind(this));
 
 		// @TODO: Remove direct reference to a canvas element here
@@ -90,16 +69,31 @@ define([
 		// @TODO must absolutely clean this up
 		// Does parallax scrolling on the viewport
 		var viewportElement = document.getElementById('viewport');
-		this.player.on('move', function (tile) {
-			this.renderer.panToTile(tile.x, tile.y, 0);
-			this.renderer.clear();
-			this.renderer.render();
+		var moves = 0,
+			panMoveDelay = 0;
 
-			var bgPos = this.renderer.pixelForCoordinates(tile.x * PARALLAX_MODIFIER, tile.y * PARALLAX_MODIFIER, tile.z * PARALLAX_MODIFIER, true);
-			viewportElement.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
+		this.player.on('move', function (tile) {
+			++moves;
+
+
+			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
+				this.renderer.panToTile(tile.x, tile.y, 0);
+				this.cursor.panToTile(tile.x, tile.y, 0);
+			}
+			if(panMoveDelay) {
+				this.renderer.panViewportToTile(tile.x, tile.y, 0);
+				this.cursor.panViewportToTile(tile.x, tile.y, 0);
+			}
+
+			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
+				this.renderer.clear();
+				this.renderer.render();
+			}
 
 			this.cursor.clear();
 			this.cursor.render();
+			var bgPos = this.renderer.pixelForCoordinates(tile.x * PARALLAX_MODIFIER, tile.y * PARALLAX_MODIFIER, tile.z * PARALLAX_MODIFIER, true);
+			viewportElement.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 		}.bind(this));
 
 
@@ -120,7 +114,15 @@ define([
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
 		this.renderer.onResize();
 		this.cursor.onResize();
-		this.renderer.panToTile(this.player.tile.x, this.player.tile.y, 0);
+
+
+		var bindReset = function () {
+			this.renderer.panToTile(this.player.tile.x, this.player.tile.y, 0);
+			this.cursor.panToTile(this.player.tile.x, this.player.tile.y, 0);
+		}.bind(this);
+
+		bindReset();
+
 		this.cursor.render();
 
 		// @TODO: Do this way more nicely, bitch
@@ -150,6 +152,44 @@ define([
 			this.world.generateNewTiles();
 		}
 		console.timeEnd(arguments.callee.name);
+	};
+
+	Application.prototype.maintainTilesAroundPlayer = function () {
+
+		var registry = this.world.tiles,
+			playerLocation = this.player.tile,
+			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
+				11,
+				// delete anything between 9 and 8
+				10,
+				// remux everything between 8 and 7
+				7.5,
+				// keep static everything lower than that
+			], true, true),
+			renderableTiles = tileRanges[1],
+			regeneratableTiles = renderableTiles.filter(function (tile) {
+				return tile instanceof Tile;
+			});
+
+		this.world.generateTilesOnPositions(renderableTiles.filter(function (tile) {
+			return !(tile instanceof Tile);
+		}));
+
+		this.world.relaxTiles(regeneratableTiles, 0.1, true);
+
+		regeneratableTiles.forEach(function (tile) {
+			tile.updateColorsForRegistry(registry);
+		});
+
+
+		tileRanges[0].forEach(function (tile) {
+			if(!(tile instanceof Tile))
+				return;
+			registry.delete(tile.x + ',' + tile.y);
+			console.log('deleted');
+		}.bind(this));
+
+		return tileRanges[2];
 	};
 
 	return Application;
