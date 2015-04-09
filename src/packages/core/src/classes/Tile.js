@@ -11,18 +11,29 @@ define([
 		Z_GRASS_LEVEL = 7,
 		Z_BARREN_LEVEL = 13,
 
-		MAX_TILE_Z = Z_BARREN_LEVEL;
+		MAX_TILE_Z = Z_BARREN_LEVEL,
+
+		MAX_TILE_REGENS = 4;
 
 	function Tile(x, y, z) {
 		this.id = this.getIdForCoordinates(x, y);
 		this.x = Math.round(x);
 		this.y = Math.round(y);
 		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
-
 		this.regens = 0;
 
-		this.fillColor = null;
-		this.strokeColor = null;
+		this.fillColor = new Color({
+			hue: 0,
+			saturation: 0,
+			lightness: 0,
+			alpha: 0
+		});
+		this.strokeColor = new Color({
+			hue: 0,
+			saturation: 0,
+			lightness: 0.3,
+			alpha: 0.3
+		});
 
 		// Will not be open to new generated neighbours once at least this number of neighbors is already present
 		//this.saturationThreshold = Math.round(3 + 3 * this.z/7);
@@ -46,6 +57,9 @@ define([
 		return id.split(',').map(function (coord) {
 			return parseInt(coord);
 		});
+	};
+	Tile.prototype.canStillBeChanged  = function () {
+		return this.regens < MAX_TILE_REGENS;
 	};
 
 	Tile.prototype.getAllNeighbourIds = function () {
@@ -96,27 +110,32 @@ define([
 		return max * (1 - Math.random() * 2);
 	}
 	Tile.prototype.updateColorsForRegistry = function (registry) {
-		var unfilledNeighbours = this.getUnfilledNeighbours(registry).length,
-			colorEffects = [],
-			tileRelativeHeight = this.z / MAX_TILE_Z;
+		if(this.canStillBeChanged())
+			return;
+
+		var tileRelativeHeight = this.z / MAX_TILE_Z;
 
 		this.fillColor = new Color({
 			hue: 82,
 			saturation: 0.5,
 			lightness: 0.1 + 0.4 * Math.pow(tileRelativeHeight, 1.5)
 		});
-		if(this.z <= Z_SEA_LEVEL) {
-			this.fillColor = this.fillColor.blend(new Color({ // water
+
+		if(this.isWater()) {
+			this.fillColor = new Color({ // water
 					hue: 189 + randomRatio(4),
 					saturation: 0.77 + randomRatio(0.03),
-					lightness: 0.32 + randomRatio(0.05)
-				}), 0.8);
+					lightness: 0.32 + randomRatio(0.05),
+					alpha: 0.7
+				});
+
 		} else if (this.z <= Z_BEACH_LEVEL) {
 			this.fillColor = this.fillColor.blend(new Color({ // beach color
 					hue: 30 + randomRatio(4),
 					saturation: 0.49 + randomRatio(0.03),
 					lightness: 0.60 + randomRatio(0.05)
 				}), 0.8);
+
 		} else if (this.z <= Z_GRASS_LEVEL) {
 			// maintain normal color
 		}
@@ -127,7 +146,8 @@ define([
 			this.fillColor = this.fillColor.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
 		}
 
-		this.strokeColor = this.fillColor.darkenByRatio(0.2);
+
+		this.strokeColor = this.fillColor.darkenByRatio(0.1);
 
 	};
 
@@ -150,8 +170,18 @@ define([
 			this.fillColor.lightenByRatio(0.3)
 		);
 		//Z_SEA_LEVEL
-		if(!this.isWater() && this.z <= Z_GRASS_LEVEL && Math.random() < 0.1)
-			this.renderRandomArtifact(renderer);
+		//if(!this.isWater() && this.z <= Z_GRASS_LEVEL && Math.random() < 0.1)
+			//this.renderRandomArtifact(renderer);
+	};
+
+	Tile.prototype.markAsLastSeen = function (registry) {
+		if(this.timeout) {
+			clearTimeout(this.timeout);
+		}
+
+		this.timeout = setTimeout(function () {
+			registry.delete(this.x + ',' + this.y);
+		}.bind(this), 5000);
 	};
 
 	Tile.prototype.renderRandomArtifact = function (renderer) {

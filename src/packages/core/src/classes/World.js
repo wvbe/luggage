@@ -95,10 +95,10 @@ define([
 	};
 
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
-		console.log('Regenerate', tileIds.length);
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		tileIds.forEach(function (tileId) {
-			var tile = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+			if(!this.tiles.get(tileId))
+				this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
 		}.bind(this));
 	};
 
@@ -121,13 +121,13 @@ define([
 	};
 
 	World.prototype.relaxTiles = function (tiles, amount, ignoreEmptyPositions) {
-		console.log('Relaxing all tiles');
 		if(!amount)
 			amount = 0.2;
 		var iamount = 1 - amount;
 		tiles.forEach(function (tile) {
+
 			tile.getAllNeighbours(this.tiles).forEach(function (otherTile) {
-				if(otherTile) {
+				if(otherTile && otherTile.canStillBeChanged()) {
 					//var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
 					otherTile.z = iamount * otherTile.z + amount * tile.z;
 					tile.z = amount * otherTile.z + iamount * tile.z;
@@ -135,6 +135,11 @@ define([
 					tile.z = iamount * iamount * iamount * tile.z;
 				}
 			});
+
+			++tile.regens;
+
+			if(!tile.canStillBeChanged())
+				tile.updateColorsForRegistry(this.tiles)
 		}.bind(this));
 	};
 
@@ -143,8 +148,6 @@ define([
 	};
 
 	World.prototype.generateNewTile = function (coordinates) {
-		var manhattanDistanceFromCenter = Math.abs(coordinates[0]) + Math.abs(coordinates[1]);
-
 		return this.tiles.set(new this.Tile(
 			coordinates[0],
 			coordinates[1],
@@ -156,7 +159,7 @@ define([
 				//- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
 				//+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
 				//- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
-			)/8, 13) * 128 - 1
+			)/8, 13) * 128
 		));
 	};
 

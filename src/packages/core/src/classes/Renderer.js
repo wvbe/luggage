@@ -126,11 +126,13 @@ define([
 	Renderer.prototype.finishLastShape = function (strokeColor, fillColor) {
 		if(fillColor) {
 			this.setFillColor(fillColor);
-			this.context.fill();
+			if(fillColor.alpha)
+				this.context.fill();
 		}
 		if(strokeColor) {
 			this.setStrokeColor(strokeColor);
-			this.context.stroke();
+			if(strokeColor.alpha)
+				this.context.stroke();
 		}
 	};
 	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius, strokeColor, fillColor) {
@@ -206,8 +208,8 @@ define([
 	};
 	
 	Renderer.prototype.fillBox = function (x, y, z, width, length, height, strokeColor, fillColor) {
-		this.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.3));
-		this.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.6));
+		this.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.1));
+		this.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.2));
 		this.fillFlatPlane(x, y, z + height, width, length, strokeColor, fillColor);
 	};
 

@@ -47,8 +47,10 @@ define([
 
 		var worldTiles = this.world.tiles;
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, 8));
-		this.world.relaxAllTiles( 0.1);
-		this.world.relaxAllTiles( 0.1);
+		this.world.relaxAllTiles(0.1);
+		this.world.relaxAllTiles(0.1);
+		this.world.relaxAllTiles(0.1);
+
 		worldTiles.list().forEach(function(tile) {
 			tile.updateColorsForRegistry(worldTiles);
 		});
@@ -68,32 +70,35 @@ define([
 
 		// @TODO must absolutely clean this up
 		// Does parallax scrolling on the viewport
-		var viewportElement = document.getElementById('viewport');
+		this.backdrop = document.getElementById('backdrop');
 		var moves = 0,
 			panMoveDelay = 5;
 
 		this.player.on('move', function (tile) {
-			++moves;
-
-//
-			if(moves % (panMoveDelay+1) === 0) {
+			// every once in a blue moon, pan the camera dead-center on the player
+			if(moves % panMoveDelay === 0) {
 				this.renderer.panViewportToTile(tile.x, tile.y, 0);
 				this.cursor.panViewportToTile(tile.x, tile.y, 0);
 				this.renderer.panToTile(tile.x, tile.y, 0);
-				this.cursor.panToTile(tile.x, tile.y, 0);
+				//this.cursor.panToTile(tile.x, tile.y, 0);
 			}
-//			if(panMoveDelay) {
-//			}
-//
-//			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
-				this.renderer.clear();
-				this.renderer.render();
-//			}
 
+			// redraw all the things
+			this.renderer.clear();
+			this.renderer.render();
 			this.cursor.clear();
 			this.cursor.render();
-			var bgPos = this.renderer.pixelForCoordinates(tile.x * PARALLAX_MODIFIER, tile.y * PARALLAX_MODIFIER, tile.z * PARALLAX_MODIFIER, true);
-			viewportElement.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
+
+			var bgPos = this.renderer.pixelForCoordinates(
+					tile.x * PARALLAX_MODIFIER,
+					tile.y * PARALLAX_MODIFIER,
+					tile.z * PARALLAX_MODIFIER,
+					true
+				);
+			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
+
+
+			++moves;
 		}.bind(this));
 
 
@@ -117,8 +122,12 @@ define([
 
 
 		var bindReset = function () {
-			this.renderer.panToTile(this.player.tile.x, this.player.tile.y, 0);
-			this.cursor.panToTile(this.player.tile.x, this.player.tile.y, 0);
+			var tile = this.player.tile;
+			this.renderer.panToTile(tile.x, tile.y, 0);
+			this.cursor.panToTile(tile.x, tile.y, 0);
+
+			this.renderer.panViewportToTile(tile.x, tile.y, 0);
+			this.cursor.panViewportToTile(tile.x, tile.y, 0);
 		}.bind(this);
 
 		bindReset();
@@ -160,19 +169,20 @@ define([
 			playerLocation = this.player.tile,
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
 				12,
-				// delete anything between 9 and 8
+				// outOfRangeTiles, delete
 				11,
-				// remux everything between 8 and 7
-				8,
-				// keep static everything lower than that,
-				6
+				// couldBeAnyTiles, remux
+				3
+				// shouldBeDoneTiles, render this shit
 			], true, true),
 			outOfRangeTiles = tileRanges[0],
 			couldBeAnyTiles = tileRanges[1],
 			shouldBeDoneTiles = tileRanges[2],
-			actuallyRendereredTiles = tileRanges[3],
+
 			regeneratableTiles = couldBeAnyTiles.filter(function (tile) {
 				return tile instanceof Tile;
+			}).concat(shouldBeDoneTiles).filter(function (tile) {
+				return tile.canStillBeChanged();
 			});
 
 		this.world.generateTilesOnPositions(couldBeAnyTiles.filter(function (tile) {
@@ -181,18 +191,19 @@ define([
 
 		this.world.relaxTiles(regeneratableTiles, 0.1, true);
 
-		actuallyRendereredTiles.forEach(function (tile) {
-			tile.updateColorsForRegistry(registry);
-		});
+//		shouldBeDoneTiles.forEach(function (tile) {
+//			if(tile instanceof Tile)
+//				tile.updateColorsForRegistry(registry);
+//		});
 
 		outOfRangeTiles.forEach(function (tile) {
 			if(!(tile instanceof Tile))
 				return;
 			registry.delete(tile.x + ',' + tile.y);
-			console.log('deleted');
 		}.bind(this));
 
-		return actuallyRendereredTiles;
+		return registry.list();
+		//return actuallyRendereredTiles;
 	};
 
 	return Application;

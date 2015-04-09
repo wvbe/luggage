@@ -44,13 +44,9 @@ body {
 		min-width: 300px;
 		min-height: 200px;
 
-		background: {
-			image: url('images/stardust.png');
-			position: 0px 0px;
-		}
-		transition: background-position 0.5s;
 		#world,
-		#player {
+		#player,
+		#backdrop {
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -72,7 +68,13 @@ body {
 }
 #viewport {
 }
-
+#backdrop {
+	transition: background-position 0.5s;
+	background: {
+		image: url('images/backdrop.jpg');
+		position: 0px 0px;
+	}
+}
 #cursor {
 	position: absolute;
 
