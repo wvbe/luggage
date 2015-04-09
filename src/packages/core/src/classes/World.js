@@ -99,7 +99,6 @@ define([
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		tileIds.forEach(function (tileId) {
 			var tile = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
-			tile.updateColorsForRegistry(this.tiles);
 		}.bind(this));
 	};
 
@@ -157,7 +156,7 @@ define([
 				//- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
 				//+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
 				//- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
-			)/8, 13) * 128
+			)/8, 13) * 128 - 1
 		));
 	};
 

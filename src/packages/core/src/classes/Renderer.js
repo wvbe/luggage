@@ -68,12 +68,14 @@ define([
 	};
 	Renderer.prototype.setViewportOffset = function (x, y) {
 		ABSOLUTE_VIEWPORT_OFFSET = {
-			x: -VIRTUAL_CAMERA_OFFSET.x - x,
-			y: -VIRTUAL_CAMERA_OFFSET.y - y
+			x: -x,
+			y: -y
 		};
 		this.canvas.classList.add('transitioning');
 		this.canvas.style.top = ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
 		this.canvas.style.left = ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
+		this.canvas.style.marginTop = -ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
+		this.canvas.style.marginLeft = -ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
 	};
 	/**
 	 * Pan to the position of a tile

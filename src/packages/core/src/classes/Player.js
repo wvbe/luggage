@@ -9,7 +9,7 @@ define([
 		// Player location
 		this.tile = tile;
 		this.fillColor = new Color([255, 255, 255]);
-		this.strokeColor = new Color([0, 0, 0]);
+		this.strokeColor = new Color([50,50,50]);
 		this.channel = app.messenger.create('player-channel')
 			.bindToListElement(document.getElementById('messenger'));
 	}
@@ -26,14 +26,20 @@ define([
 			return;
 		}
 
+		if(tile.isWater()) {
+			this.hmm(language.player.CANNOT_MOVE__WATER);
+			return;
+		}
+
+
 		var dz = tile.z - this.tile.z;
 		if(dz > 2) {
-			this.hmm(language.player.CANNOT_MOVE__TOO_STEEP_UP, tile.z - this.tile.z);
+			this.hmm(language.player.CANNOT_MOVE__TOO_STEEP_UP);
 			return;
 		}
 
 		if(dz < -2) {
-			this.doh(language.player.CANNOT_MOVE__TOO_STEEP_DOWN,  Math.abs(tile.z - this.tile.z));
+			this.doh(language.player.CANNOT_MOVE__TOO_STEEP_DOWN);
 			return;
 		}
 

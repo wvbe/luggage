@@ -70,25 +70,25 @@ define([
 		// Does parallax scrolling on the viewport
 		var viewportElement = document.getElementById('viewport');
 		var moves = 0,
-			panMoveDelay = 0;
+			panMoveDelay = 5;
 
 		this.player.on('move', function (tile) {
 			++moves;
 
-
-			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
+//
+			if(moves % (panMoveDelay+1) === 0) {
+				this.renderer.panViewportToTile(tile.x, tile.y, 0);
+				this.cursor.panViewportToTile(tile.x, tile.y, 0);
 				this.renderer.panToTile(tile.x, tile.y, 0);
 				this.cursor.panToTile(tile.x, tile.y, 0);
 			}
-			if(panMoveDelay) {
-				this.renderer.panViewportToTile(tile.x, tile.y, 0);
-				this.cursor.panViewportToTile(tile.x, tile.y, 0);
-			}
-
-			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
+//			if(panMoveDelay) {
+//			}
+//
+//			if(!panMoveDelay || moves % (panMoveDelay+1) === 0) {
 				this.renderer.clear();
 				this.renderer.render();
-			}
+//			}
 
 			this.cursor.clear();
 			this.cursor.render();
@@ -159,37 +159,40 @@ define([
 		var registry = this.world.tiles,
 			playerLocation = this.player.tile,
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
-				11,
+				12,
 				// delete anything between 9 and 8
-				10,
+				11,
 				// remux everything between 8 and 7
-				7.5,
-				// keep static everything lower than that
+				8,
+				// keep static everything lower than that,
+				6
 			], true, true),
-			renderableTiles = tileRanges[1],
-			regeneratableTiles = renderableTiles.filter(function (tile) {
+			outOfRangeTiles = tileRanges[0],
+			couldBeAnyTiles = tileRanges[1],
+			shouldBeDoneTiles = tileRanges[2],
+			actuallyRendereredTiles = tileRanges[3],
+			regeneratableTiles = couldBeAnyTiles.filter(function (tile) {
 				return tile instanceof Tile;
 			});
 
-		this.world.generateTilesOnPositions(renderableTiles.filter(function (tile) {
+		this.world.generateTilesOnPositions(couldBeAnyTiles.filter(function (tile) {
 			return !(tile instanceof Tile);
 		}));
 
 		this.world.relaxTiles(regeneratableTiles, 0.1, true);
 
-		regeneratableTiles.forEach(function (tile) {
+		actuallyRendereredTiles.forEach(function (tile) {
 			tile.updateColorsForRegistry(registry);
 		});
 
-
-		tileRanges[0].forEach(function (tile) {
+		outOfRangeTiles.forEach(function (tile) {
 			if(!(tile instanceof Tile))
 				return;
 			registry.delete(tile.x + ',' + tile.y);
 			console.log('deleted');
 		}.bind(this));
 
-		return tileRanges[2];
+		return actuallyRendereredTiles;
 	};
 
 	return Application;
