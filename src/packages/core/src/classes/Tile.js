@@ -6,14 +6,14 @@ define([
 
 	// Must be known in order to produce a valid color range for all possible tiles
 
-	var Z_SEA_LEVEL = 4,
-		Z_BEACH_LEVEL = 5,
-		Z_GRASS_LEVEL = 7,
-		Z_BARREN_LEVEL = 13,
+	var Z_SEA_LEVEL = 0,
+		Z_BEACH_LEVEL = 1,
+		Z_GRASS_LEVEL = 3,
+		Z_BARREN_LEVEL = 9,
 
 		MAX_TILE_Z = Z_BARREN_LEVEL,
 
-		MAX_TILE_REGENS = 4,
+		MAX_TILE_REGENS = 9,
 
 		COLOR_UNDETERMINED_FILL = new Color({
 			hue: 0,
@@ -123,7 +123,7 @@ define([
 		var baseColor = new Color({
 			hue: 82,
 			saturation: 0.5,
-			lightness: 0.1 + 0.4 * Math.pow(tileRelativeHeight, 1.5)
+			lightness: 0.2 + 0.4 * Math.pow(tileRelativeHeight, 1.5)
 		});
 
 		if(this.isWater()) {
@@ -165,13 +165,15 @@ define([
 	 *
 	 * @param {Renderer} renderer
 	 */
+
+	var ACTUAL_WATERLINE_Z = -0.5;
 	Tile.prototype.render = function (renderer) {
 		if(this.isWater()) {
 
 			renderer.fillFlatPlane (
 				this.x,
 				this.y,
-				0,
+				ACTUAL_WATERLINE_Z,
 				1,
 				1,
 				this.strokeColor,
@@ -181,17 +183,17 @@ define([
 			renderer.fillBox(
 				this.x,
 				this.y,
-				0,
+				0 + ACTUAL_WATERLINE_Z,
 				1,
 				1,
-				this.z - Z_SEA_LEVEL + 1,
+				this.z + ACTUAL_WATERLINE_Z + 1,
 				this.strokeColor,
 				this.fillColor.lightenByRatio(0.3)
 			);
 		}
 		//Z_SEA_LEVEL
-		//if(!this.isWater() && this.z <= Z_GRASS_LEVEL && Math.random() < 0.1)
-			//this.renderRandomArtifact(renderer);
+		if(this.z > Z_BEACH_LEVEL && this.z <= Z_GRASS_LEVEL && Math.random() < 0.1)
+			this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.markAsLastSeen = function (registry) {

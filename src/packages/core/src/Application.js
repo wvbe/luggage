@@ -15,7 +15,8 @@ define([
 	Player
 ) {
 	var PARALLAX_MODIFIER = -0.1,
-		SCROLL_ZOOM_SPEED = 0.8;
+		SCROLL_ZOOM_SPEED = 0.8,
+		FOG_OF_WAR_DISTANCE = 16;
 
 	function Application() {
 
@@ -46,7 +47,7 @@ define([
 		this.world = new World(this);
 
 		var worldTiles = this.world.tiles;
-		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, 11));
+		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, FOG_OF_WAR_DISTANCE));
 //
 //		worldTiles.list().forEach(function(tile) {
 //			tile.updateColorsForRegistry(worldTiles);
@@ -78,14 +79,8 @@ define([
 			panMoveDelay = 1;
 
 		this.player.on('move', function (tile) {
-			// every once in a blue moon, pan the camera dead-center on the player
-			if(moves % panMoveDelay === 0) {
-				this.renderer.panViewportToTile(tile.x, tile.y, 0);
-				this.renderer.panToTile(tile.x, tile.y, 0);
-				this.cursor.panViewportToTile(tile.x, tile.y, 0);
-			}
-
-			//this.cursor.panToTile(tile.x, tile.y, 0);
+			this.renderer.panViewportToTile(tile.x, tile.y, 0);
+			this.renderer.panToTile(tile.x, tile.y, 0);
 
 			// redraw all the things
 			this.renderer.clear();
@@ -171,9 +166,9 @@ define([
 			playerLocation = this.player.tile,
 
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
-				12,
+				FOG_OF_WAR_DISTANCE + 1,
 				// outOfRangeTiles, delete
-				11,
+				FOG_OF_WAR_DISTANCE,
 				// couldBeAnyTiles, remux
 			], true, true),
 
@@ -189,7 +184,7 @@ define([
 			return !(tile instanceof Tile);
 		}));
 
-		this.world.relaxTiles(regeneratableTiles.concat(newTiles), 0.1, true);
+		this.world.relaxTiles(regeneratableTiles.concat(newTiles), 0.03, true);
 
 //		shouldBeDoneTiles.forEach(function (tile) {
 //			if(tile instanceof Tile)
