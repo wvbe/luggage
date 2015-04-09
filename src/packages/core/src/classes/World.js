@@ -96,9 +96,13 @@ define([
 
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
-		tileIds.forEach(function (tileId) {
-			if(!this.tiles.get(tileId))
-				this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+		return tileIds.map(function (tileId) {
+			var currentValue = this.tiles.get(tileId);
+
+			if(!currentValue)
+				currentValue = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+
+			return currentValue;
 		}.bind(this));
 	};
 
@@ -127,9 +131,10 @@ define([
 		tiles.forEach(function (tile) {
 
 			tile.getAllNeighbours(this.tiles).forEach(function (otherTile) {
-				if(otherTile && otherTile.canStillBeChanged()) {
+				if(otherTile) {
 					//var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
-					otherTile.z = iamount * otherTile.z + amount * tile.z;
+					if (otherTile.canStillBeChanged())
+						otherTile.z = iamount * otherTile.z + amount * tile.z;
 					tile.z = amount * otherTile.z + iamount * tile.z;
 				} else if (!ignoreEmptyPositions) {
 					tile.z = iamount * iamount * iamount * tile.z;
@@ -159,7 +164,7 @@ define([
 				//- Math.sin(0.004 * Math.cos(1/(manhattanDistanceFromCenter || 0.001)) * manhattanDistanceFromCenter)
 				//+ Math.sin(1.01 * coordinates[0] * (0.27 * coordinates[0] + 0.77 * coordinates[1])/2)
 				//- Math.cos(1.3 + 0.99 * coordinates[1] * (0.88 * coordinates[0] - 0.37 * coordinates[1])/2)
-			)/8, 13) * 128
+			)/8, 13) * 128 - 0.5
 		));
 	};
 

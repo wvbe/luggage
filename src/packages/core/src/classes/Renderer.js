@@ -54,6 +54,13 @@ define([
 
 
 
+	Renderer.prototype.getTileSize = function (x, y, z) {
+		return TILE_SIZE;
+	};
+	Renderer.prototype.setTileSize = function (tileSize) {
+		TILE_SIZE = tileSize;
+		TILE_HEIGHT = tileSize/6;
+	};
 	/**
 	 * Pan to pixel values
 	 * @param {Number} x

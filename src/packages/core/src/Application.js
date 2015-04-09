@@ -46,14 +46,11 @@ define([
 		this.world = new World(this);
 
 		var worldTiles = this.world.tiles;
-		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, 8));
-		this.world.relaxAllTiles(0.1);
-		this.world.relaxAllTiles(0.1);
-		this.world.relaxAllTiles(0.1);
-
-		worldTiles.list().forEach(function(tile) {
-			tile.updateColorsForRegistry(worldTiles);
-		});
+		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, 11));
+//
+//		worldTiles.list().forEach(function(tile) {
+//			tile.updateColorsForRegistry(worldTiles);
+//		});
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
 		 * Future: interact, say
@@ -65,6 +62,12 @@ define([
 			this.world.getSpawnTile() // Specify location of the player
 		);
 
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+
 		// Binds keyboard input to interaction with the world
 		this.player.setKeyBinds(this.world);
 
@@ -72,16 +75,17 @@ define([
 		// Does parallax scrolling on the viewport
 		this.backdrop = document.getElementById('backdrop');
 		var moves = 0,
-			panMoveDelay = 5;
+			panMoveDelay = 1;
 
 		this.player.on('move', function (tile) {
 			// every once in a blue moon, pan the camera dead-center on the player
 			if(moves % panMoveDelay === 0) {
 				this.renderer.panViewportToTile(tile.x, tile.y, 0);
-				this.cursor.panViewportToTile(tile.x, tile.y, 0);
 				this.renderer.panToTile(tile.x, tile.y, 0);
-				//this.cursor.panToTile(tile.x, tile.y, 0);
+				this.cursor.panViewportToTile(tile.x, tile.y, 0);
 			}
+
+			//this.cursor.panToTile(tile.x, tile.y, 0);
 
 			// redraw all the things
 			this.renderer.clear();
@@ -137,9 +141,7 @@ define([
 		// @TODO: Do this way more nicely, bitch
 		// Zooms the viewport in and out on mousewheel action
 		document.body.addEventListener('mousewheel', function (e) {
-			window.TILE_SIZE = Math.abs(window.TILE_SIZE * (e.wheelDelta < 0 ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED));
-			window.TILE_HEIGHT = window.TILE_SIZE/6;
-			this.renderer.panToTile(this.player.tile);
+			this.renderer.setTileSize(Math.abs(this.renderer.getTileSize() * (e.wheelDelta < 0 ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED)))
 			this.renderer.clear();
 			this.renderer.render();
 			this.cursor.clear();
@@ -167,29 +169,27 @@ define([
 
 		var registry = this.world.tiles,
 			playerLocation = this.player.tile,
+
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
 				12,
 				// outOfRangeTiles, delete
 				11,
 				// couldBeAnyTiles, remux
-				3
-				// shouldBeDoneTiles, render this shit
 			], true, true),
+
 			outOfRangeTiles = tileRanges[0],
 			couldBeAnyTiles = tileRanges[1],
-			shouldBeDoneTiles = tileRanges[2],
 
-			regeneratableTiles = couldBeAnyTiles.filter(function (tile) {
-				return tile instanceof Tile;
-			}).concat(shouldBeDoneTiles).filter(function (tile) {
-				return tile.canStillBeChanged();
-			});
+			regeneratableTiles = couldBeAnyTiles
+				.filter(function (tile) {
+					return (tile instanceof Tile) && tile.canStillBeChanged();
+				});
 
-		this.world.generateTilesOnPositions(couldBeAnyTiles.filter(function (tile) {
+		var newTiles = this.world.generateTilesOnPositions(couldBeAnyTiles.filter(function (tile) {
 			return !(tile instanceof Tile);
 		}));
 
-		this.world.relaxTiles(regeneratableTiles, 0.1, true);
+		this.world.relaxTiles(regeneratableTiles.concat(newTiles), 0.1, true);
 
 //		shouldBeDoneTiles.forEach(function (tile) {
 //			if(tile instanceof Tile)
