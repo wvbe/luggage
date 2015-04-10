@@ -48,10 +48,7 @@ define([
 
 		var worldTiles = this.world.tiles;
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, FOG_OF_WAR_DISTANCE));
-//
-//		worldTiles.list().forEach(function(tile) {
-//			tile.updateColorsForRegistry(worldTiles);
-//		});
+
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
 		 * Future: interact, say
@@ -63,6 +60,11 @@ define([
 			this.world.getSpawnTile() // Specify location of the player
 		);
 
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
+		this.maintainTilesAroundPlayer();
 		this.maintainTilesAroundPlayer();
 		this.maintainTilesAroundPlayer();
 		this.maintainTilesAroundPlayer();
@@ -116,8 +118,8 @@ define([
 
 		// Call the renderer resize fn once, now that we have both app.world and app.player
 		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
-		this.renderer.onResize();
-		this.cursor.onResize();
+//		this.renderer.onResize();
+//		this.cursor.onResize();
 
 
 		var bindReset = function () {
@@ -185,11 +187,6 @@ define([
 		}));
 
 		this.world.relaxTiles(regeneratableTiles.concat(newTiles), 0.03, true);
-
-//		shouldBeDoneTiles.forEach(function (tile) {
-//			if(tile instanceof Tile)
-//				tile.updateColorsForRegistry(registry);
-//		});
 
 		outOfRangeTiles.forEach(function (tile) {
 			if(!(tile instanceof Tile))

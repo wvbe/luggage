@@ -150,19 +150,28 @@ define([
 		this.finishLastShape(strokeColor, fillColor);
 	};
 
-	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height, strokeColor, fillColor) {
-		this.context.strokeStyle = 'rgb(0,0,0)';
+	Renderer.prototype.fillSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
 		this.context.beginPath();
-		[
-			this.pixelForCoordinates(x, y, z), // -- links onder
-			this.pixelForCoordinates(x + width, y, z), // +- rechts onder
-			this.pixelForCoordinates(x + width, y + height, z), // ++ rechts boven
-			this.pixelForCoordinates(x, y + height, z)  // -+ links boven
-		].forEach(function (coords, i) {
-			this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
-		}.bind(this));
+
+		coordinateSets
+			.map(function (coords) {
+				return this.pixelForCoordinates(coords[0], coords[1], coords[2]);
+			}.bind(this))
+			.forEach(function (coords, i) {
+				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
+			}.bind(this));
 		this.context.closePath();
 		this.finishLastShape(strokeColor, fillColor);
+	};
+
+	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height, strokeColor, fillColor) {
+		this.context.beginPath();
+		return this.fillSpatialPolygon([
+			[x, y, z], // -- links onder
+			[x + width, y, z], // +- rechts onder
+			[x + width, y + height, z], // ++ rechts boven
+			[x, y + height, z]  // -+ links boven
+		], strokeColor, fillColor);
 	};
 
 	/**
