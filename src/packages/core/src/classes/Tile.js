@@ -36,7 +36,7 @@ define([
 		this.regens = 0;
 		this.maxRegens = MAX_TILE_REGENS + randomRatio(2);
 
-//		this.corners = [];
+		this.corners = [];
 
 		this.fillColor = COLOR_UNDETERMINED_FILL;
 
@@ -157,25 +157,25 @@ define([
 				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
 		}
 
-//		this.corners = [
-//			[-1, -1],
-//			[1, -1],
-//			[1, 1],
-//			[-1, 1],
-//		].map(function (relativeCoordinates) {
-//			return [
-//				this,
-//				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y + relativeCoordinates[1])),
-//				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y)),
-//				registry.get(this.getIdForCoordinates(this.x, this.y + relativeCoordinates[1]))
-//			].reduce(function (totalZ, tile) {
-//				if(!(tile && tile instanceof Tile))
-//					totalZ = totalZ + this.z;
-//				else
-//					totalZ = totalZ + tile.z;
-//				return totalZ;
-//			}, 0)/4;
-//		}.bind(this));
+		this.corners = [
+			[-1, -1],
+			[1, -1],
+			[1, 1],
+			[-1, 1],
+		].map(function (relativeCoordinates) {
+			return [
+				this,
+				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y + relativeCoordinates[1])),
+				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y)),
+				registry.get(this.getIdForCoordinates(this.x, this.y + relativeCoordinates[1]))
+			].reduce(function (totalZ, tile) {
+				if(!(tile && tile instanceof Tile))
+					totalZ = totalZ + this.z;
+				else
+					totalZ = totalZ + tile.z;
+				return totalZ;
+			}.bind(this), 0)/4;
+		}.bind(this));
 
 
 		if(!this.isWater())
@@ -192,9 +192,7 @@ define([
 	 */
 
 	function equalizeCornerZIfCloseEnough(coords, corner, z) {
-		if(Math.abs(corner - z) < 2)
-			return coords.concat([corner || ACTUAL_WATERLINE_Z]);
-		return coords.concat([z || ACTUAL_WATERLINE_Z]);
+		return coords.concat([corner]);
 	}
 
 	var ACTUAL_WATERLINE_Z = -0.5;
@@ -211,23 +209,24 @@ define([
 				this.fillColor.lightenByRatio(0.3)
 			);
 		} else {
-//			renderer.fillSpatialPolygon([
-//					equalizeCornerZIfCloseEnough([this.x, this.y], this.corners[0], this.z),
-//					equalizeCornerZIfCloseEnough([this.x + 1, this.y], this.corners[1], this.z),
-//					equalizeCornerZIfCloseEnough([this.x + 1, this.y + 1], this.corners[2], this.z),
-//					equalizeCornerZIfCloseEnough([this.x, this.y + 1], this.corners[3], this.z)
-//				],
-//				this.strokeColor,
-//				this.fillColor.lightenByRatio(0.3));
-			renderer.fillBox(
-				this.x,
-				this.y,
-				0 + ACTUAL_WATERLINE_Z,
-				1,
-				1,
-				this.z + ACTUAL_WATERLINE_Z + 1,
+			renderer.fillSpatialPolygon([
+					equalizeCornerZIfCloseEnough([this.x, this.y], this.corners[0], this.z),
+					equalizeCornerZIfCloseEnough([this.x + 1, this.y], this.corners[1], this.z),
+					equalizeCornerZIfCloseEnough([this.x + 1, this.y + 1], this.corners[2], this.z),
+					equalizeCornerZIfCloseEnough([this.x, this.y + 1], this.corners[3], this.z)
+				],
 				this.strokeColor,
 				this.fillColor.lightenByRatio(0.3));
+
+//			renderer.fillBox(
+//				this.x,
+//				this.y,
+//				0 + ACTUAL_WATERLINE_Z,
+//				1,
+//				1,
+//				this.z + ACTUAL_WATERLINE_Z + 1,
+//				this.strokeColor,
+//				this.fillColor.lightenByRatio(0.3));
 
 		}
 		//Z_SEA_LEVEL
