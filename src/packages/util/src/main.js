@@ -25,8 +25,13 @@ define([
 		return array;
 	}
 
+	function randomFromArray (array) {
+		return array[Math.floor(Math.random() * array.length)];
+	}
+
 	return {
 		pythagoras: findLengthByPythagoras,
-		shuffle: shuffleArray
+		shuffle: shuffleArray,
+		randomFromArray: randomFromArray
 	};
 });

@@ -6,13 +6,17 @@ require.config({
 		'app': 'app',
 
 		// https://github.com/wvbe/object-store
+		'angular': '../lib/angular/angular',
 		'object-store': '../lib/object-store/ObjectStore',
 
 		// https://github.com/scottcorgan/tiny-emitter
 		'tiny-emitter': '../lib/tiny-emitter/dist/tinyemitter',
 
 		// https://github.com/brehaut/color-js/
-		'Color': '../lib/color-js/color'
+		'Color': '../lib/color-js/color',
+
+		// https://github.com/dmauro/Keypress/
+		'Keypress': '../lib/Keypress/keypress'
 	},
 	'packages': [
 
@@ -25,6 +29,9 @@ require.config({
 	shim: {
 		'Color': {
 			exports: 'net.brehaut.Color'
+		},
+		'angular': {
+			exports: 'angular'
 		}
 	}
 

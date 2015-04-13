@@ -6,14 +6,19 @@
 	"CANNOT_MOVE__TOO_STEEP_UP": [
 		"That's too steep bro",
 		"Can't be arsed climbing up there",
+		"Couldn't do that if I wanted to",
 		"Too steep, bro"
 	],
 	"CANNOT_MOVE__TOO_STEEP_DOWN": [
 		"Looks too dangerous",
 		"I'm afraid of heights bro",
+		"Wanna get me killed?",
 		"I'd break a leg bro"
 	],
 	"CANNOT_MOVE__WATER": [
-		"Whatttt can't swim brah!"
+		"Whatttt can't swim brah!",
+		"I ain't gettin' in no water",
+		"Not gonna swim",
+		"Not swimming bro!"
 	]
 }

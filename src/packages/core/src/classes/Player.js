@@ -1,8 +1,13 @@
 define([
 	'Color',
 	'tiny-emitter',
-	'language'
-], function(Color, EventEmitter, language) {
+	'language',
+	'ui'
+], function(Color, EventEmitter, language, ui) {
+
+	var PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
+		timeout: 500
+	};
 
 	function Player(app, tile) {
 		EventEmitter.call(this);
@@ -10,8 +15,12 @@ define([
 		this.tile = tile;
 		this.fillColor = new Color([255, 255, 255]);
 		this.strokeColor = new Color([50,50,50]);
-		this.channel = app.messenger.create('player-channel')
-			.bindToListElement(document.getElementById('messenger'));
+
+		this.tooltip = app.tooltip.registerSlot(
+			'player',
+			{ /* options */ },
+			document.getElementById('tooltips')
+		);
 	}
 
 	Player.prototype = Object.create(EventEmitter.prototype);
@@ -51,15 +60,15 @@ define([
 	};
 
 	Player.prototype.doh = function (message) {
-		this.channel.logMessageOfType('doh', message);
+		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
 	};
 
 	Player.prototype.hmm = function (message) {
-		this.channel.logMessageOfType('hmm', message);
+		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
 	};
 
 	Player.prototype.yikes = function (message) {
-		this.channel.logMessageOfType('yikes', message);
+		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS3));
 	};
 
 	Player.prototype.setKeyBinds = function (world) {

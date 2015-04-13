@@ -1,10 +1,18 @@
 define([
-	'./JsonObjectDump',
-	'./NotificationService'
-], function (JsonObjectDump, NotificationService) {
-	return {
-		JsonObjectDump: JsonObjectDump,
-		NotificationService: NotificationService
+	'./TooltipService',
 
+	'./tooltips/Tooltip',
+	'./tooltips/RandomLanguageTooltip'
+], function (
+	TooltipService,
+
+	Tooltip,
+	RandomLanguageTooltip
+) {
+	return {
+		TooltipService: TooltipService,
+
+		Tooltip: Tooltip,
+		RandomLanguageTooltip: RandomLanguageTooltip
 	}
 });

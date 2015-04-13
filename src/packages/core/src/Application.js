@@ -27,8 +27,7 @@ define([
 
 		// @TODO: Remove direct reference to a canvas element here
 		this.renderer = new Renderer(document.getElementById('world'), function () {
-			var closestTiles = this.maintainTilesAroundPlayer();
-			this.renderer.renderTiles(closestTiles);
+			this.renderer.renderTiles(this.world.tiles.list());
 			//this.renderer.renderTiles(this.world.tiles.list());
 		}.bind(this));
 
@@ -37,7 +36,7 @@ define([
 			this.player.render(this.cursor);
 		}.bind(this));
 
-		this.messenger = new ui.NotificationService();
+		this.tooltip = new ui.TooltipService();
 
 		/**
 		 * Describes the playable environment: tiles, distances, areas
@@ -46,8 +45,21 @@ define([
 		// @TODO must absolutely clean this up
 		this.world = new World(this);
 
-		var worldTiles = this.world.tiles;
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, FOG_OF_WAR_DISTANCE));
+		var spawnTile = this.world.getSpawnTile();
+
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+		this.maintainTilesAroundPosition(spawnTile);
+
 
 		/**
 		 * Describes this machine's interaction with his/her character in the game world: move
@@ -57,19 +69,8 @@ define([
 		 */
 		this.player = new Player(
 			this, // Pass the app
-			this.world.getSpawnTile() // Specify location of the player
+			spawnTile // Specify location of the player
 		);
-
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
-		this.maintainTilesAroundPlayer();
 
 		// Binds keyboard input to interaction with the world
 		this.player.setKeyBinds(this.world);
@@ -81,6 +82,9 @@ define([
 			panMoveDelay = 1;
 
 		this.player.on('move', function (tile) {
+
+			this.maintainTilesAroundPosition(this.player.tile);
+
 			this.renderer.panViewportToTile(tile.x, tile.y, 0);
 			this.renderer.panToTile(tile.x, tile.y, 0);
 
@@ -103,32 +107,11 @@ define([
 		}.bind(this));
 
 
-		/**
-		 * Describes UI behaviour. Doesn't have much to do with the game in itself
-		 * @type {Ui}
-		 */
-
-		this.ui = {
-			currentTile: new ui.JsonObjectDump(
-				document.getElementById('dump-current-tile'),
-				this.getPlayerLocation()
-			)
-		};
-		this.player.on('move', this.ui.currentTile.update.bind(this.ui.currentTile));
-
-		// Call the renderer resize fn once, now that we have both app.world and app.player
-		// @TODO: Too hacky ~ @EDIT: A little less hacky, still not sure
-//		this.renderer.onResize();
-//		this.cursor.onResize();
-
 
 		var bindReset = function () {
 			var tile = this.player.tile;
 			this.renderer.panToTile(tile.x, tile.y, 0);
-			this.cursor.panToTile(tile.x, tile.y, 0);
-
 			this.renderer.panViewportToTile(tile.x, tile.y, 0);
-			this.cursor.panViewportToTile(tile.x, tile.y, 0);
 		}.bind(this);
 
 		bindReset();
@@ -138,14 +121,26 @@ define([
 		// @TODO: Do this way more nicely, bitch
 		// Zooms the viewport in and out on mousewheel action
 		document.body.addEventListener('mousewheel', function (e) {
-			this.renderer.setTileSize(Math.abs(this.renderer.getTileSize() * (e.wheelDelta < 0 ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED)))
-			this.renderer.clear();
-			this.renderer.render();
-			this.cursor.clear();
-			this.cursor.render();
 		}.bind(this));
 
 	}
+
+	Application.prototype.zoom = function (amount) {
+		if(amount === undefined)
+			amount = true;
+
+		if(amount === !!amount)
+			amount = this.renderer.getTileSize() * (!amount ? SCROLL_ZOOM_SPEED : 1/SCROLL_ZOOM_SPEED)
+
+		if(!amount)
+			amount = 1;
+
+		this.renderer.setTileSize(Math.abs(amount))
+		this.renderer.clear();
+		this.renderer.render();
+		this.cursor.clear();
+		this.cursor.render();
+	};
 
 	Application.prototype.getPlayerLocation = function () {
 		return this.player.tile;
@@ -162,10 +157,9 @@ define([
 		console.timeEnd(arguments.callee.name);
 	};
 
-	Application.prototype.maintainTilesAroundPlayer = function () {
+	Application.prototype.maintainTilesAroundPosition = function (playerLocation) {
 
 		var registry = this.world.tiles,
-			playerLocation = this.player.tile,
 
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
 				FOG_OF_WAR_DISTANCE + 1,

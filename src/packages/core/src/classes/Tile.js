@@ -200,7 +200,6 @@ define([
 	var ACTUAL_WATERLINE_Z = -0.5;
 	Tile.prototype.render = function (renderer) {
 		if(this.isWater()) {
-
 			renderer.fillFlatPlane (
 				this.x,
 				this.y,
@@ -211,14 +210,6 @@ define([
 				this.fillColor.lightenByRatio(0.3)
 			);
 		} else {
-//			renderer.fillSpatialPolygon([
-//					equalizeCornerZIfCloseEnough([this.x, this.y], this.corners[0], this.z),
-//					equalizeCornerZIfCloseEnough([this.x + 1, this.y], this.corners[1], this.z),
-//					equalizeCornerZIfCloseEnough([this.x + 1, this.y + 1], this.corners[2], this.z),
-//					equalizeCornerZIfCloseEnough([this.x, this.y + 1], this.corners[3], this.z)
-//				],
-//				this.strokeColor,
-//				this.fillColor.lightenByRatio(0.3));
 			renderer.fillBox(
 				this.x,
 				this.y,
@@ -231,7 +222,12 @@ define([
 
 		}
 		//Z_SEA_LEVEL
-		if(this.z > Z_BEACH_LEVEL && this.z <= Z_GRASS_LEVEL && Math.random() < 0.1)
+		if(
+			!this.canStillBeChanged() // Must be fully computed
+			&& this.z > Z_BEACH_LEVEL // And cannot be on or below a beach
+			&& this.z <= Z_GRASS_LEVEL // And should be on or below grass
+			&& Math.random() < 0.1 // Only one out of 10 elegible tiles actually get an artifac
+		)
 			this.renderRandomArtifact(renderer);
 	};
 
