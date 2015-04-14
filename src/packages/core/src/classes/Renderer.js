@@ -23,13 +23,31 @@ define([
 			y: 0
 		};
 
-	function Renderer(canvasElement, renderCallback) {
+	function Renderer(canvasElement) {
 		this.canvas = canvasElement;
 		this.context = this.canvas.getContext('2d');
+
+		this._render = null;
+
 		this.onResize();
-		this.render = renderCallback;
+
+
 		window.addEventListener('resize', this.onResize.bind(this));
 	}
+
+	Renderer.prototype.onRender = function (renderCallback) {
+		this._render = renderCallback;
+		return this;
+	};
+
+	Renderer.prototype.render = function () {
+		if(!(typeof this._render === 'function'))
+			return;
+
+		this._render(this);
+
+		return this;
+	};
 
 	Renderer.prototype.onResize = function () {
 		var bb = this.canvas.getBoundingClientRect(),
@@ -37,7 +55,7 @@ define([
 			newHeight = parseInt(bb.height);
 
 		if(this.canvas.width === newWidth && this.canvas.height === newHeight)
-			return;
+			return this;
 
 		this.canvas.width = newWidth;
 		this.canvas.height = newHeight;
@@ -47,9 +65,13 @@ define([
 
 		if(typeof this.render === 'function')
 			this.render();
+
+		return this;
 	};
 	Renderer.prototype.clear = function () {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+		return this;
 	};
 
 
@@ -60,6 +82,8 @@ define([
 	Renderer.prototype.setTileSize = function (tileSize) {
 		TILE_SIZE = tileSize;
 		TILE_HEIGHT = tileSize/6;
+
+		return this;
 	};
 	/**
 	 * Pan to pixel values
@@ -72,6 +96,8 @@ define([
 			y: y,
 			z: z
 		};
+
+		return this;
 	};
 	Renderer.prototype.setViewportOffset = function (x, y) {
 		ABSOLUTE_VIEWPORT_OFFSET = {
@@ -83,6 +109,8 @@ define([
 		this.canvas.style.left = ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
 		this.canvas.style.marginTop = -ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
 		this.canvas.style.marginLeft = -ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
+
+		return this;
 	};
 	/**
 	 * Pan to the position of a tile
@@ -107,15 +135,16 @@ define([
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
-		this.setOffset(
+		return this.setOffset(
 			-coords[0],
 			-coords[1]
 		);
+
 	};
 	Renderer.prototype.panViewportToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
-		this.setViewportOffset(
+		return this.setViewportOffset(
 			coords[0],
 			coords[1]
 		);
@@ -141,13 +170,16 @@ define([
 			if(strokeColor.alpha)
 				this.context.stroke();
 		}
+
+		return this;
 	};
 	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius, strokeColor, fillColor) {
 		var center = this.pixelForCoordinates(x, y, z);
 		this.context.beginPath();
 		this.context.arc(center[0], center[1], radius * TILE_SIZE, 0, 2 * Math.PI);
 		this.context.closePath();
-		this.finishLastShape(strokeColor, fillColor);
+
+		return this.finishLastShape(strokeColor, fillColor);
 	};
 
 	Renderer.prototype.fillSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
@@ -161,11 +193,13 @@ define([
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
 		this.context.closePath();
-		this.finishLastShape(strokeColor, fillColor);
+
+		return this.finishLastShape(strokeColor, fillColor);
 	};
 
 	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height, strokeColor, fillColor) {
 		this.context.beginPath();
+
 		return this.fillSpatialPolygon([
 			[x, y, z], // -- links onder
 			[x + width, y, z], // +- rechts onder
@@ -196,7 +230,8 @@ define([
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
 		this.context.closePath();
-		this.finishLastShape(strokeColor, fillColor);
+
+		return this.finishLastShape(strokeColor, fillColor);
 	};
 
 	/**
@@ -208,7 +243,7 @@ define([
 	 * @param height
 	 */
 	Renderer.prototype.fillEastToWestPlane = function (x, y, z, length, height, strokeColor, fillColor) {
-		this.fillVerticalPlane(x, y, z, x + length, y, z, height, strokeColor, fillColor);
+		return this.fillVerticalPlane(x, y, z, x + length, y, z, height, strokeColor, fillColor);
 	};
 
 	/**
@@ -220,42 +255,30 @@ define([
 	 * @param height
 	 */
 	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height, strokeColor, fillColor) {
-		this.fillVerticalPlane(x, y, z, x, y + length, z, height, strokeColor, fillColor);
+		return this.fillVerticalPlane(x, y, z, x, y + length, z, height, strokeColor, fillColor);
 	};
 	
 	Renderer.prototype.fillBox = function (x, y, z, width, length, height, strokeColor, fillColor) {
-		this.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.1));
-		this.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.2));
-		this.fillFlatPlane(x, y, z + height, width, length, strokeColor, fillColor);
+		return this
+			.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.1))
+			.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.2))
+			.fillFlatPlane(x, y, z + height, width, length, strokeColor, fillColor);
 	};
 
 
 	Renderer.prototype.setFillColor = function(color) {
 		this.context.fillStyle = color.toString();
+
+		return this;
 	};
 
 	Renderer.prototype.setStrokeColor = function(color) {
 		this.context.strokeStyle = color.toString();
+
+		return this;
 	};
 
-	/**
-	 *
-	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
-	 */
-	Renderer.prototype.renderTiles = function (tiles) {
-		tiles
-			.sort(furthestTilesFirst)
-			.forEach(function (tile) {
-				tile.render(this);
-			}.bind(this));
-	};
 
-	// Sort function, used to sort a list of tiles by their X/Y position towards the viewer's perspective.
-	function furthestTilesFirst (a, b) {
-		if(a.y === b.y)
-			return a.x < b.x ? -1 : 1;
-		return a.y < b.y ? 1 : -1;
-	}
 
 	return Renderer;
 });

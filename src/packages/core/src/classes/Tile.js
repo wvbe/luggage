@@ -41,13 +41,6 @@ define([
 		this.fillColor = COLOR_UNDETERMINED_FILL;
 
 		this.strokeColor = COLOR_UNDETERMINED_STROKE;
-
-		// Will not be open to new generated neighbours once at least this number of neighbors is already present
-		//this.saturationThreshold = Math.round(3 + 3 * this.z/7);
-		this.saturationThreshold = 3 + Math.random() * 3;
-
-		//this.saturationThreshold = Math.round(1 + Math.random() * 7);
-		// this.saturationThreshold = 6; // Yields an octagon-ish shape
 	}
 
 	/**
@@ -103,13 +96,6 @@ define([
 			return !registry.get(id);
 		});
 	};
-
-	Tile.prototype.isSaturated = function (registry, saturationThresholdOverride) {
-		return this.getNeighbours(registry).length >= (saturationThresholdOverride === undefined
-			? this.saturationThreshold
-			: saturationThresholdOverride);
-	};
-
 
 	function randomRatio (max) {
 		if (max === undefined)

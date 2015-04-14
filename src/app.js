@@ -12,7 +12,5 @@ require([
 
 	var app = new Application();
 
-	app.renderer.render();
-
 	window.app = app;
 });

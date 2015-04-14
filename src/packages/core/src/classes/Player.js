@@ -9,25 +9,22 @@ define([
 		timeout: 500
 	};
 
-	function Player(app, tile) {
+	function Player(tile, tooltip) {
 		EventEmitter.call(this);
 		// Player location
 		this.tile = tile;
 		this.fillColor = new Color([255, 255, 255]);
 		this.strokeColor = new Color([50,50,50]);
 
-		this.tooltip = app.tooltip.registerSlot(
-			'player',
-			{ /* options */ },
-			document.getElementById('tooltips')
-		);
+		this.tooltip = tooltip;
 	}
 
 	Player.prototype = Object.create(EventEmitter.prototype);
 	Player.prototype.constructor = Player;
 
-	Player.prototype.move = function (world, x, y) {
-		var tile = world.tiles.get(this.tile.getIdForCoordinates(this.tile.x + x, this.tile.y + y));
+	// Must be refactored to eat a tile instead of world, x and y
+	Player.prototype.move = function (world, dx, dy) {
+		var tile = world.tiles.get(this.tile.getIdForCoordinates(this.tile.x + dx, this.tile.y + dy));
 
 		// If tile does not exist, stop
 		if(!tile) {
@@ -98,7 +95,7 @@ define([
 	 *
 	 * @param {Renderer} renderer
 	 */
-	Player.prototype.render = function (renderer) {
+	Player.prototype.renderCharacter = function (renderer) {
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
 			this.tile.x + 0.5, // Positioned on the middle...

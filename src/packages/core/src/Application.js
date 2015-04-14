@@ -25,74 +25,37 @@ define([
 		this.Renderer = Renderer;
 		this.Player = Player;
 
-		// @TODO: Remove direct reference to a canvas element here
-		this.renderer = new Renderer(document.getElementById('world'), function () {
-			this.renderer.renderTiles(this.world.tiles.list());
-			//this.renderer.renderTiles(this.world.tiles.list());
-		}.bind(this));
-
-		// @TODO: Remove direct reference to a canvas element here
-		this.cursor = new Renderer(document.getElementById('player'), function () {
-			this.player.render(this.cursor);
-		}.bind(this));
-
 		this.tooltip = new ui.TooltipService();
 
-		/**
-		 * Describes the playable environment: tiles, distances, areas
-		 * @type {World}
-		 */
-		// @TODO must absolutely clean this up
 		this.world = new World(this);
+		this.renderer = new Renderer(document.getElementById('world'))
+			.onRender(this.world.renderTiles.bind(this.world));
 
-		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition({x: 0, y: 0}, FOG_OF_WAR_DISTANCE));
-		var spawnTile = this.world.getSpawnTile();
-
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-		this.maintainTilesAroundPosition(spawnTile);
-
-
-		/**
-		 * Describes this machine's interaction with his/her character in the game world: move
-		 * Future: interact, say
-		 * @event move (tile)
-		 * @type {Player}
-		 */
 		this.player = new Player(
-			this, // Pass the app
-			spawnTile // Specify location of the player
+			this.world.getSpawnTile(),
+			this.tooltip.registerSlot('player', {}, document.getElementById('tooltips'))
 		);
+		this.cursor = new Renderer(document.getElementById('player'))
+			.onRender(this.player.renderCharacter.bind(this.player));
 
-		// Binds keyboard input to interaction with the world
+		this.backdrop = document.getElementById('backdrop');
+		/*
+			Set up render cyles
+		 */
+
+		/*
+			Generate the initial contents of the world, and iterate it 11 times
+		 */
+		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, FOG_OF_WAR_DISTANCE));
+		for(var i = 0, max = 11, center = this.player.tile; i < max; ++i)
+			this.iterateTerrain(center);
+
 		this.player.setKeyBinds(this.world);
 
-		// @TODO must absolutely clean this up
-		// Does parallax scrolling on the viewport
-		this.backdrop = document.getElementById('backdrop');
-		var moves = 0,
-			panMoveDelay = 1;
-
 		this.player.on('move', function (tile) {
+			this.iterateTerrain(tile);
 
-			this.maintainTilesAroundPosition(this.player.tile);
-
-			this.renderer.panViewportToTile(tile.x, tile.y, 0);
-			this.renderer.panToTile(tile.x, tile.y, 0);
-
-			// redraw all the things
-			this.renderer.clear();
-			this.renderer.render();
-			this.cursor.clear();
-			this.cursor.render();
+			this.focusOnTile(tile);
 
 			var bgPos = this.renderer.pixelForCoordinates(
 					tile.x * PARALLAX_MODIFIER,
@@ -101,27 +64,12 @@ define([
 					true
 				);
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
-
-
-			++moves;
 		}.bind(this));
 
-
-
-		var bindReset = function () {
-			var tile = this.player.tile;
-			this.renderer.panToTile(tile.x, tile.y, 0);
-			this.renderer.panViewportToTile(tile.x, tile.y, 0);
-		}.bind(this);
-
-		bindReset();
-
-		this.cursor.render();
-
-		// @TODO: Do this way more nicely, bitch
-		// Zooms the viewport in and out on mousewheel action
-		document.body.addEventListener('mousewheel', function (e) {
-		}.bind(this));
+		/*
+			No turning back now
+		 */
+		this.focusOnTile(this.getPlayerLocation());
 
 	}
 
@@ -136,6 +84,23 @@ define([
 			amount = 1;
 
 		this.renderer.setTileSize(Math.abs(amount))
+		this.renderer.clear();
+		this.renderer.render();
+		this.cursor.clear();
+		this.cursor.render();
+	};
+
+	Application.prototype.focusOnTile = function (tile) {
+		if(!tile) {
+			console.log('Tile does not exist');
+			return;
+		}
+
+		this.renderer.panViewportToTile(tile.x, tile.y, 0);
+		this.renderer.panToTile(tile.x, tile.y, 0);
+		this.cursor.panToTile(tile.x, tile.y, 0);
+
+		// redraw all the things
 		this.renderer.clear();
 		this.renderer.render();
 		this.cursor.clear();
@@ -157,7 +122,7 @@ define([
 		console.timeEnd(arguments.callee.name);
 	};
 
-	Application.prototype.maintainTilesAroundPosition = function (playerLocation) {
+	Application.prototype.iterateTerrain = function (playerLocation) {
 
 		var registry = this.world.tiles,
 
@@ -187,9 +152,6 @@ define([
 				return;
 			registry.delete(tile.x + ',' + tile.y);
 		}.bind(this));
-
-		return registry.list();
-		//return actuallyRendereredTiles;
 	};
 
 	return Application;

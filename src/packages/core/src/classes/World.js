@@ -109,19 +109,19 @@ define([
 	/**
 	 * Generates new neighbour tiles for *unsaturated* tiles
 	 */
-	World.prototype.generateNewTiles = function (saturationThresholdOverride) {
+	World.prototype.generateNewTiles = function () {
 		var tiles = this.tiles.list();
 		if(!tiles.length)
 			this.generateNewTile([0, 0]);
 		tiles.forEach(function (tile) {
-			if(tile.isSaturated(this.tiles, saturationThresholdOverride))
-				return;
 			this.generateTilesOnPositions(tile.getUnfilledNeighbours(this.tiles));
 		}.bind(this));
 	};
 
 	World.prototype.getPotentialTilesAroundPosition = function (center, distance, minimumDistance) {
-		return this.getAreaAroundPosition(center, distance, minimumDistance, true, false);
+		return this.getAreaAroundPosition(center, distance, minimumDistance, true, false).filter(function (tileOrTileId) {
+			return typeof tileOrTileId === 'string';
+		});
 	};
 
 	World.prototype.relaxTiles = function (tiles, amount, ignoreEmptyPositions) {
@@ -148,10 +148,6 @@ define([
 		}.bind(this));
 	};
 
-	World.prototype.relaxAllTiles = function (amount) {
-		return this.relaxTiles(this.tiles.list(), amount, false);
-	};
-
 	World.prototype.generateNewTile = function (coordinates) {
 		return this.tiles.set(new this.Tile(
 			coordinates[0],
@@ -165,10 +161,28 @@ define([
 	 * @returns {Object}
 	 */
 	World.prototype.getSpawnTile = function () {
-		return this.tiles.get('0,0');
+		return this.tiles.get('0,0') || this.generateNewTile([0,0]);
 	};
 
 
+	/**
+	 *
+	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
+	 */
+	World.prototype.renderTiles = function (renderer) {
+		this.tiles.list()
+			.sort(furthestTilesFirst)
+			.forEach(function (tile) {
+				tile.render(renderer);
+			});
+	};
 
+
+	// Sort function, used to sort a list of tiles by their X/Y position towards the viewer's perspective.
+	function furthestTilesFirst (a, b) {
+		if(a.y === b.y)
+			return a.x < b.x ? -1 : 1;
+		return a.y < b.y ? 1 : -1;
+	}
 	return World;
 });
