@@ -5,12 +5,15 @@ define([
 	'ui'
 ], function(Color, EventEmitter, language, ui) {
 
+	// Options that the RandomLanguageTooltips for "doh", "hmm" and "yikes"
+	// have in common.
 	var PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
 		timeout: 500
 	};
 
 	function Player(tile, tooltip) {
 		EventEmitter.call(this);
+
 		// Player location
 		this.tile = tile;
 		this.fillColor = new Color([255, 255, 255]);
