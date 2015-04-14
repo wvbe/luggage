@@ -73,7 +73,7 @@ define([
 
 	}
 
-	Application.prototype.zoom = function (amount) {
+	Application.prototype.zoom = function (amount, tile) {
 		if(amount === undefined)
 			amount = true;
 
@@ -83,11 +83,9 @@ define([
 		if(!amount)
 			amount = 1;
 
-		this.renderer.setTileSize(Math.abs(amount))
-		this.renderer.clear();
-		this.renderer.render();
-		this.cursor.clear();
-		this.cursor.render();
+		this.renderer.setTileSize(Math.abs(amount));
+
+		this.focusOnTile(tile || this.getPlayerLocation());
 	};
 
 	Application.prototype.focusOnTile = function (tile) {
@@ -96,30 +94,19 @@ define([
 			return;
 		}
 
-		this.renderer.panViewportToTile(tile.x, tile.y, 0);
-		this.renderer.panToTile(tile.x, tile.y, 0);
-		this.cursor.panToTile(tile.x, tile.y, 0);
-
-		// redraw all the things
-		this.renderer.clear();
-		this.renderer.render();
-		this.cursor.clear();
-		this.cursor.render();
+		this.renderer
+			.panViewportToTile(tile.x, tile.y, 0)
+			.panToTile(tile.x, tile.y, 0)
+			.clear()
+			.render();
+		this.cursor
+			.panToTile(tile.x, tile.y, 0)
+			.clear()
+			.render();
 	};
 
 	Application.prototype.getPlayerLocation = function () {
 		return this.player.tile;
-	};
-
-	Application.prototype.generateTilesOnUnsaturatedEdges = function generateTilesOnUnsaturatedEdges(iterations) {
-		iterations = iterations === undefined
-			? 1
-			: parseInt(iterations || 0);
-		console.time(arguments.callee.name);
-		for(var i = 0; i < iterations; ++i) {
-			this.world.generateNewTiles();
-		}
-		console.timeEnd(arguments.callee.name);
 	};
 
 	Application.prototype.iterateTerrain = function (playerLocation) {
