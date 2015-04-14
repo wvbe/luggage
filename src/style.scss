@@ -2,7 +2,7 @@ $UNIT: 12px;
 $SPACING: 2 * $UNIT;
 $TILE_SIZE: 32px;
 $ISOMETRIC_VIEW_DIAMETER: 15;
-$time-short: 0.5s;
+$time-short: 0.1s;
 $ISOMETRIC_Y_TO_X_OFFSET: 0.3; // For every n on the Y axis, displace n*OFFSET to the right
 $ISOMETRIC_Y_TO_X_RATIO: 0.6;  // n on the Y axis is always this ratio of (horizontal) units
 $ISOMETRIC_Z_TO_X_RATIO: 1; // n on the Z axis is always this ratio of (horizontal) units

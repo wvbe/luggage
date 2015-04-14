@@ -1,6 +1,9 @@
 define([
 	'ui',
 	'Color',
+
+	'./InputService',
+
 	'./classes/World',
 	'./classes/Tile',
 	'./classes/Renderer',
@@ -9,6 +12,8 @@ define([
 	ui,
 	Color,
 
+	InputService,
+
 	World,
 	Tile,
 	Renderer,
@@ -16,17 +21,17 @@ define([
 ) {
 	var PARALLAX_MODIFIER = -0.1,
 		SCROLL_ZOOM_SPEED = 0.8,
-		FOG_OF_WAR_DISTANCE = 16;
+		FOG_OF_WAR_DISTANCE = 16,
+
+		ARROW_KEY_CONFIG = {
+			intervalTime: 250
+		};
 
 	function Application() {
 
-		this.World = World;
-		this.Tile = Tile;
-		this.Renderer = Renderer;
-		this.Player = Player;
-
 		this.tooltip = new ui.TooltipService();
 
+		this.input = new InputService();
 		this.world = new World(this);
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
@@ -50,8 +55,6 @@ define([
 		for(var i = 0, max = 11, center = this.player.tile; i < max; ++i)
 			this.iterateTerrain(center);
 
-		this.player.setKeyBinds(this.world);
-
 		this.player.on('move', function (tile) {
 			this.iterateTerrain(tile);
 
@@ -65,6 +68,9 @@ define([
 				);
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 		}.bind(this));
+
+
+		this.setInputListeners();
 
 		/*
 			No turning back now
@@ -109,14 +115,32 @@ define([
 		return this.player.tile;
 	};
 
+	Application.prototype.setInputListeners = function () {
+		this.input
+			.configureKey(37, ARROW_KEY_CONFIG, function () { // left
+				this.player.move(this.world, -1, 0);
+			}.bind(this))
+			.configureKey(38, ARROW_KEY_CONFIG, function () { // up
+				this.player.move(this.world, 0, 1);
+			}.bind(this))
+			.configureKey(39, ARROW_KEY_CONFIG, function () { // right
+				this.player.move(this.world, 1, 0);
+			}.bind(this))
+			.configureKey(40, ARROW_KEY_CONFIG, function () { // down
+				this.player.move(this.world, 0, -1);
+			}.bind(this))
+			.listen();
+
+	};
+
 	Application.prototype.iterateTerrain = function (playerLocation) {
 
-		var registry = this.world.tiles,
+		var registry = this.world,
 
 			tileRanges = this.world.getTilesWithinRanges(playerLocation, [
 				FOG_OF_WAR_DISTANCE + 1,
 				// outOfRangeTiles, delete
-				FOG_OF_WAR_DISTANCE,
+				FOG_OF_WAR_DISTANCE
 				// couldBeAnyTiles, remux
 			], true, true),
 
@@ -137,7 +161,7 @@ define([
 		outOfRangeTiles.forEach(function (tile) {
 			if(!(tile instanceof Tile))
 				return;
-			registry.delete(tile.x + ',' + tile.y);
+			registry.delete([tile.x, tile.y]);
 		}.bind(this));
 	};
 

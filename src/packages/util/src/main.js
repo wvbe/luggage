@@ -2,11 +2,11 @@ define([
 ], function () {
 
 
-	function findLengthByPythagoras (x, y) {
+	function pythagoras (x, y) {
 		return Math.sqrt(x*x + y*y);
 	}
 
-	function shuffleArray(array) {
+	function shuffle(array) {
 		var currentIndex = array.length, temporaryValue, randomIndex ;
 
 		// While there remain elements to shuffle...
@@ -29,9 +29,26 @@ define([
 		return array[Math.floor(Math.random() * array.length)];
 	}
 
+	// http://davidwalsh.name/javascript-debounce-function
+	function debounce(func, wait, immediate) {
+		var timeout;
+		return function () {
+			var context = this, args = arguments;
+			var later = function () {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	}
+
 	return {
-		pythagoras: findLengthByPythagoras,
-		shuffle: shuffleArray,
+		debounce: debounce,
+		pythagoras: pythagoras,
+		shuffle: shuffle,
 		randomFromArray: randomFromArray
 	};
 });

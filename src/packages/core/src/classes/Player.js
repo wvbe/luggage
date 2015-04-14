@@ -27,7 +27,7 @@ define([
 
 	// Must be refactored to eat a tile instead of world, x and y
 	Player.prototype.move = function (world, dx, dy) {
-		var tile = world.tiles.get(this.tile.getIdForCoordinates(this.tile.x + dx, this.tile.y + dy));
+		var tile = world.get([this.tile.x + dx, this.tile.y + dy]);
 
 		// If tile does not exist, stop
 		if(!tile) {

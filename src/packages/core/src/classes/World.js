@@ -1,33 +1,49 @@
 define([
 	'tiny-emitter',
 	'object-store',
-	'util'
+	'util',
+
+	'./Tile'
 ], function(
 	EventEmitter,
 	ObjectStore,
-	util
+	util,
+
+	Tile
 ) {
 
-	function World(app) {
-		EventEmitter.call(this);
-
-		this.Tile = app.Tile;
-
-		this.tiles = new ObjectStore({
-			requireInstanceOf: this.Tile,
+	function World() {
+		//EventEmitter.call(this);
+		ObjectStore.call(this, {
+			requireInstanceOf: Tile,
 			primaryKey: 'id'
 		});
 
 	}
 
 
-	World.prototype = Object.create(EventEmitter.prototype);
+	World.prototype = Object.create(ObjectStore.prototype);
 	World.prototype.constructor = World;
+
+	/*
+		Wrap two ObjectStore methods so that they would eat a coordinate set as well
+	 */
+	World.prototype.get = function (id) {
+		if(Array.isArray(id))
+			id = id.join(',');
+		return ObjectStore.prototype.get.call(this, id);
+	};
+	World.prototype.delete = function (id) {
+		if(Array.isArray(id))
+			id = id.join(',');
+		return ObjectStore.prototype.delete.call(this, id);
+	};
+
 
 	// @TODO: The delta X & Y's (and their render order) can be cached for every distance.
 	World.prototype.getAreaAroundPosition = function (center, maximumDistance, minimumDistance, includeEmptyPositions, useManhattanDistance) {
 		var list = [],
-			store = this.tiles;
+			store = this;
 
 		minimumDistance = minimumDistance || 0; // Inclusive, and so is maximumDistance
 
@@ -43,11 +59,11 @@ define([
 				if (tileDistance > maximumDistance || tileDistance < minimumDistance)
 					continue;
 
-				var tile = store.get(x + ',' + y);
+				var tile = store.get([x, y]);
 				if (tile)
 					list.push(tile);
 				else if (includeEmptyPositions)
-					list.push(x + ',' + y);
+					list.push([x, y]);
 			}
 		}
 		return list;
@@ -55,7 +71,7 @@ define([
 
 	World.prototype.getTilesWithinRanges = function (center, borders, includeEmpty, includeTooClose, useManhattanDistance) {
 
-		var store = this.tiles,
+		var store = this,
 			maximumDistance = borders[0];
 
 		if(borders.length === 1)
@@ -78,11 +94,11 @@ define([
 						continue;
 					}
 					if (j < borders.length - 1 || includeTooClose) {
-						var tile = store.get(x + ',' + y);
+						var tile = store.get([x, y]);
 						if (tile)
 							lists[j].push(tile);
 						else if (includeEmpty)
-							lists[j].push(x + ',' + y);
+							lists[j].push([x, y]);
 					}
 
 					break;
@@ -97,10 +113,10 @@ define([
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		return tileIds.map(function (tileId) {
-			var currentValue = this.tiles.get(tileId);
+			var currentValue = this.get(tileId);
 
 			if(!currentValue)
-				currentValue = this.generateNewTile(this.Tile.prototype.getCoordinatesForId(tileId));
+				currentValue = this.generateNewTile(tileId);
 
 			return currentValue;
 		}.bind(this));
@@ -110,11 +126,11 @@ define([
 	 * Generates new neighbour tiles for *unsaturated* tiles
 	 */
 	World.prototype.generateNewTiles = function () {
-		var tiles = this.tiles.list();
+		var tiles = this.list();
 		if(!tiles.length)
 			this.generateNewTile([0, 0]);
 		tiles.forEach(function (tile) {
-			this.generateTilesOnPositions(tile.getUnfilledNeighbours(this.tiles));
+			this.generateTilesOnPositions(tile.getUnfilledNeighbours(this));
 		}.bind(this));
 	};
 
@@ -130,7 +146,7 @@ define([
 		var iamount = 1 - amount;
 		tiles.forEach(function (tile) {
 
-			tile.getAllNeighbours(this.tiles).forEach(function (otherTile) {
+			tile.getAllNeighbours(this).forEach(function (otherTile) {
 				if(otherTile) {
 					//var highestZ = otherTile ? (tile.z > otherTile.z ? tile.z : otherTile.z) : tile.z;
 					if (otherTile.canStillBeChanged())
@@ -144,12 +160,12 @@ define([
 			++tile.regens;
 
 			if(!tile.canStillBeChanged())
-				tile.updateColorsForRegistry(this.tiles)
+				tile.updateColorsForRegistry(this)
 		}.bind(this));
 	};
 
 	World.prototype.generateNewTile = function (coordinates) {
-		return this.tiles.set(new this.Tile(
+		return this.set(new Tile(
 			coordinates[0],
 			coordinates[1],
 			Math.pow((1 - 2 * Math.random()), 15) * 64 + 1));
@@ -161,7 +177,7 @@ define([
 	 * @returns {Object}
 	 */
 	World.prototype.getSpawnTile = function () {
-		return this.tiles.get('0,0') || this.generateNewTile([0,0]);
+		return this.get([0,0]) || this.generateNewTile([0,0]);
 	};
 
 
@@ -170,7 +186,7 @@ define([
 	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
 	 */
 	World.prototype.renderTiles = function (renderer) {
-		this.tiles.list()
+		this.list()
 			.sort(furthestTilesFirst)
 			.forEach(function (tile) {
 				tile.render(renderer);
