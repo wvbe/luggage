@@ -39,8 +39,6 @@ define([
 
 	function Application() {
 
-		this.tooltip = new ui.TooltipService();
-
 		this.input = new InputService();
 		this.world = new World(this);
 		this.renderer = new Renderer(document.getElementById('world'))
