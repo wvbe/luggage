@@ -106,13 +106,11 @@ define([
 	 */
 	InputService.prototype.createKeyIntervalHandler = function (keyCode, options, handler) {
 		var destroyInterval = function () {
-				console.log('Clear');
 				clearInterval(KEY_INTERVALS[keyCode]);
 				KEY_INTERVALS[keyCode] = null;
 			},
 			createInterval = function () {
 				KEY_INTERVALS[keyCode] = setInterval(function () {
-					console.log('Interval', this.pressed);
 					if(this.pressed[keyCode])
 						handler();
 					else
@@ -123,8 +121,6 @@ define([
 		return function () {
 			if(KEY_INTERVALS[keyCode])
 				return;
-
-			console.log(KEY_INTERVALS[keyCode]);
 
 			handler();
 			createInterval();

@@ -5,11 +5,15 @@ define([
 	'ui'
 ], function(Color, EventEmitter, language, ui) {
 
-	// Options that the RandomLanguageTooltips for "doh", "hmm" and "yikes"
-	// have in common.
-	var PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
-		timeout: 500
-	};
+	var
+		// Options for short "doh", "hmm" and "yikes" remarks
+		PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
+			timeout: 500
+		},
+		// Options for those remarks that are a bit more memorable
+		PLAYER_MEMORABLE_TOOLTIP_OPTIONS = {
+			timeout: 3000
+		};
 
 	function Player(tile, tooltip) {
 		EventEmitter.call(this);
@@ -31,24 +35,24 @@ define([
 
 		// If tile does not exist, stop
 		if(!tile) {
-			this.yikes(language.player.CANNOT_MOVE__EMPTY_TILE);
+			this.think(language.player.CANNOT_MOVE__EMPTY_TILE);
 			return;
 		}
 
 		if(tile.isWater()) {
-			this.hmm(language.player.CANNOT_MOVE__WATER);
+			this.think(language.player.CANNOT_MOVE__WATER);
 			return;
 		}
 
 
 		var dz = tile.z - this.tile.z;
 		if(dz > 2) {
-			this.hmm(language.player.CANNOT_MOVE__TOO_STEEP_UP);
+			this.think(language.player.CANNOT_MOVE__TOO_STEEP_UP);
 			return;
 		}
 
 		if(dz < -2) {
-			this.doh(language.player.CANNOT_MOVE__TOO_STEEP_DOWN);
+			this.think(language.player.CANNOT_MOVE__TOO_STEEP_DOWN);
 			return;
 		}
 
@@ -59,40 +63,16 @@ define([
 		this.emit('move', this.tile);
 	};
 
-	Player.prototype.doh = function (message) {
-		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
+	/**
+	 * An introspective monologue with oneself
+	 * @param message
+	 * @param isMemorable
+	 */
+	Player.prototype.think = function (message, isMemorable) {
+		this.tooltip.open(new ui.RandomLanguageTooltip(message, isMemorable
+			? PLAYER_MEMORABLE_TOOLTIP_OPTIONS
+			: PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
 	};
-
-	Player.prototype.hmm = function (message) {
-		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
-	};
-
-	Player.prototype.yikes = function (message) {
-		this.tooltip.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS3));
-	};
-
-	Player.prototype.setKeyBinds = function (world) {
-		document.addEventListener('keydown', function (event) {
-			// If not an arrow key, ignore
-			if(event.keyCode < 37 || event.keyCode > 40)
-				return;
-
-			// Do not scroll page or whatever
-			event.preventDefault();
-
-			switch (event.keyCode) {
-				case 37: // left
-					return this.move(world, -1, 0);
-				case 38: // up
-					return this.move(world, 0, 1);
-				case 39: // right
-					return this.move(world, 1, 0);
-				case 40: // down
-					return this.move(world, 0, -1);
-			}
-		}.bind(this));
-	};
-
 
 	/**
 	 *

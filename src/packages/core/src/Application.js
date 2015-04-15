@@ -96,7 +96,7 @@ define([
 
 	Application.prototype.focusOnTile = function (tile) {
 		if(!tile) {
-			console.log('Tile does not exist');
+			this.player.think('Weird, this tile doesnt exist', true);
 			return;
 		}
 
