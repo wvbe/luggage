@@ -25,6 +25,16 @@ define([
 
 		ARROW_KEY_CONFIG = {
 			intervalTime: 250
+		},
+
+
+		// Options for short player thoughts
+		PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
+			timeout: 500
+		},
+		// Options for those remarks that are a bit more memorable
+		PLAYER_MEMORABLE_TOOLTIP_OPTIONS = {
+			timeout: 3000
 		};
 
 	function Application() {
@@ -36,17 +46,18 @@ define([
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 
-		this.player = new Player(
-			this.world.getSpawnTile(),
-			this.tooltip.registerSlot('player', {}, document.getElementById('tooltips'))
-		);
+		this.player = new Player(this.world.getSpawnTile());
 		this.cursor = new Renderer(document.getElementById('player'))
 			.onRender(this.player.renderCharacter.bind(this.player));
+		this.expressions = new ui.TooltipSlot('expressions', {}, document.getElementById('expressions'));
 
 		this.backdrop = document.getElementById('backdrop');
 		/*
 			Set up render cyles
 		 */
+		this.player.on('thought', function (message) {
+			this.expressions.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
+		}.bind(this));
 
 		/*
 			Generate the initial contents of the world, and iterate it 11 times

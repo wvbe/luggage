@@ -5,25 +5,14 @@ define([
 	'ui'
 ], function(Color, EventEmitter, language, ui) {
 
-	var
-		// Options for short "doh", "hmm" and "yikes" remarks
-		PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
-			timeout: 500
-		},
-		// Options for those remarks that are a bit more memorable
-		PLAYER_MEMORABLE_TOOLTIP_OPTIONS = {
-			timeout: 3000
-		};
 
-	function Player(tile, tooltip) {
+	function Player(tile) {
 		EventEmitter.call(this);
 
 		// Player location
 		this.tile = tile;
 		this.fillColor = new Color([255, 255, 255]);
 		this.strokeColor = new Color([50,50,50]);
-
-		this.tooltip = tooltip;
 	}
 
 	Player.prototype = Object.create(EventEmitter.prototype);
@@ -68,10 +57,8 @@ define([
 	 * @param message
 	 * @param isMemorable
 	 */
-	Player.prototype.think = function (message, isMemorable) {
-		this.tooltip.open(new ui.RandomLanguageTooltip(message, isMemorable
-			? PLAYER_MEMORABLE_TOOLTIP_OPTIONS
-			: PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
+	Player.prototype.think = function (message) {
+		this.emit('thought', message);
 	};
 
 	/**
