@@ -14,7 +14,7 @@ define([
 		Z_BARREN_LEVEL = 9,
 
 		// The virtual Z offset that is given to the waterline, to make it more distinct
-		ACTUAL_WATERLINE_Z = -0.5,
+		ACTUAL_WATERLINE_Z = 0.5,
 
 		MAX_TILE_Z = Z_BARREN_LEVEL,
 
@@ -32,7 +32,9 @@ define([
 			saturation: 0,
 			lightness: 0.3,
 			alpha: 0.3
-		});
+		}),
+
+		COLOR_HOVERED_FILL = new Color('yellow');
 
 	function getIdForCoordinates (x, y) {
 		return x + ',' + y;
@@ -57,25 +59,27 @@ define([
 		return this.regens < this.maxRegens;
 	};
 
-	Tile.prototype.getAllNeighbourIds = function () {
-		if(!this.neighbourIds)
-			this.neighbourIds = [
-				getIdForCoordinates.call(this, this.x, this.y + 1), // North
-				getIdForCoordinates.call(this, this.x - 1, this.y), // West
-				getIdForCoordinates.call(this, this.x + 1, this.y), // East
-				getIdForCoordinates.call(this, this.x, this.y - 1),  // South
+	Tile.prototype.getAllNeighbourIds = function (ignoreDiagonals) {
+		var neighbourIds = [
+			getIdForCoordinates.call(this, this.x, this.y + 1), // North
+			getIdForCoordinates.call(this, this.x - 1, this.y), // West
+			getIdForCoordinates.call(this, this.x + 1, this.y), // East
+			getIdForCoordinates.call(this, this.x, this.y - 1)  // South
+		];
 
+		if(!ignoreDiagonals)
+			neighbourIds = neighbourIds.concat([
 				getIdForCoordinates.call(this, this.x - 1, this.y - 1), // South-west
 				getIdForCoordinates.call(this, this.x + 1, this.y + 1), // North-east
 				getIdForCoordinates.call(this, this.x + 1, this.y - 1), // South-east
 				getIdForCoordinates.call(this, this.x -1 , this.y + 1)  // North-west
-			];
+			]);
 
-		return this.neighbourIds;
+		return neighbourIds;
 	};
 
-	Tile.prototype.getAllNeighbours = function (registry) {
-		return this.getAllNeighbourIds().map(function (id) {
+	Tile.prototype.getAllNeighbours = function (registry, ignoreDiagonals) {
+		return this.getAllNeighbourIds(ignoreDiagonals).map(function (id) {
 			return registry.get(id);
 		});
 	};
@@ -85,14 +89,14 @@ define([
 	 * @param registry
 	 * @returns {Array.<T>|*}
 	 */
-	Tile.prototype.getNeighbours = function (registry) {
-		return this.getAllNeighbours(registry).filter(function (tile) {
+	Tile.prototype.getNeighbours = function (registry, ignoreDiagonals) {
+		return this.getAllNeighbours(registry, ignoreDiagonals).filter(function (tile) {
 			return !!tile;
 		});
 	};
 
-	Tile.prototype.getUnfilledNeighbours = function (registry) {
-		return this.getAllNeighbourIds().filter(function (id) {
+	Tile.prototype.getUnfilledNeighbours = function (registry, ignoreDiagonals) {
+		return this.getAllNeighbourIds(ignoreDiagonals).filter(function (id) {
 			return !registry.get(id);
 		});
 	};
@@ -103,7 +107,6 @@ define([
 			return;
 
 		var tileRelativeHeight = this.z / MAX_TILE_Z;
-
 		var baseColor = new Color({
 			hue: 82,
 			saturation: 0.5,
@@ -133,6 +136,8 @@ define([
 			this.fillColor = baseColor
 				.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
 				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
+		} else{
+			this.fillColor = this.fillColor.lightenByRatio(0.3);
 		}
 
 //		this.corners = [
@@ -156,11 +161,15 @@ define([
 //		}.bind(this));
 
 		if(!this.isWater())
-			this.strokeColor = this.fillColor.darkenByRatio(0.1);
+			this.strokeColor = this.fillColor.darkenByRatio(0.3);
 	};
 
 	Tile.prototype.isWater = function () {
 		return this.z <= Z_SEA_LEVEL;
+	};
+
+	Tile.prototype.costTowardsTile = function (tile) {
+		return 1 + Math.abs(this.z - tile.z);
 	};
 
 	Tile.prototype.render = function (renderer) {
@@ -172,7 +181,7 @@ define([
 				1,
 				1,
 				this.strokeColor,
-				this.fillColor.lightenByRatio(0.3)
+				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
 			);
 		} else {
 			renderer.fillBox(
@@ -181,9 +190,10 @@ define([
 				0 + ACTUAL_WATERLINE_Z,
 				1,
 				1,
-				this.z + ACTUAL_WATERLINE_Z + 1,
+				this.z + ACTUAL_WATERLINE_Z,
 				this.strokeColor,
-				this.fillColor.lightenByRatio(0.3));
+				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
+			);
 
 		}
 		

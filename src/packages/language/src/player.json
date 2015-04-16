@@ -3,22 +3,22 @@
 		"Barely avoided that cliff",
 		"Shit that nearly got me"
 	],
-	"CANNOT_MOVE__TOO_STEEP_UP": [
+	"CANNOT_MOVE__TOO_STEEP": [
 		"That's too steep bro",
-		"Can't be arsed climbing up there",
 		"Couldn't do that if I wanted to",
-		"Too steep, bro"
-	],
-	"CANNOT_MOVE__TOO_STEEP_DOWN": [
+		"Too steep, bro",
 		"Looks too dangerous",
-		"I'm afraid of heights bro",
-		"Wanna get me killed?",
-		"I'd break a leg bro"
+		"Wanna get me killed?"
 	],
 	"CANNOT_MOVE__WATER": [
 		"Whatttt can't swim brah!",
 		"I ain't gettin' in no water",
 		"Not gonna swim",
 		"Not swimming bro!"
+	],
+	"CANNOT_WALK__NO_PATH": [
+		"U mad, no way of getting there",
+		"Cannot be reached",
+		"I like turtles"
 	]
 }

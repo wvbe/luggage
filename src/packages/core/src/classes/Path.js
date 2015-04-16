@@ -19,13 +19,16 @@ define([
 
 
 
-	function Path (world, start, end, validator) {
+	function Path (world, entity, start, end, validator) {
 
 		function resolvePathByParents(world, node){
 			var curr = node,
 				parent = tileData(curr).parent,
 				path = [];
 			while(parent) {
+				console.log(curr.id);
+				if(path.indexOf(curr) >= 0)
+					throw new Error('WTF path is a loop');
 				path.push(curr);
 				curr = world.get(parent);
 				parent = tileData(curr).parent;
@@ -33,24 +36,34 @@ define([
 			return path;
 		}
 
-		var heuristic = heuristics.manhattan,
+		function dataTile(data) {
+			return world.get(data.id);
+		}
+
+		function tileData(tile) {
+			if(!_tileData[tile.id])
+				_tileData[tile.id] = {
+					id: tile.id,
+					h: 0,
+					g: 0,
+					f: 0,
+					closed: false,
+					visited: false
+				};
+			return _tileData[tile.id];
+		}
+
+
+		var heuristic = heuristics.diagonal,
 			closest = false,
-			closestTile = start,
 			_tileData = {},
+			closestTileData = tileData(start),
 			_openTiles = new util.BinaryHeap(function(node) {
 				return node.f;
 			});
 
-		function dataTile(data) {
-			return world.get(data.id);
-		}
-		function tileData(tile) {
-			if(!_tileData[tile.id])
-				_tileData[tile.id] = {
-					id: tile.id
-				};
-			return _tileData[tile.id];
-		}
+		if(end.isWater())
+			return [];
 
 		tileData(start).h = heuristic(start, end);
 
@@ -61,61 +74,63 @@ define([
 				currentTile = dataTile(currentTileData);
 
 			// End case -- result has been found, return the traced path.
-			if(dataTile(currentTile) === end) {
-				return resolvePathByParents(world, end);
+			if(currentTile === end) {
+				var path = resolvePathByParents(world, end);
+				console.log('Resolved path');
+				console.log('path length', path.length);
+				console.log('open tiles left', _openTiles.size());
+				return path;
 			}
 
 			// Normal case -- move currentNode from open to closed, process each of its neighbours.
 			currentTileData.closed = true;
 
 			// Find all neighbours for the current node.
-			var neighbours = currentTile.getNeighbours(world);
+			var neighbours = currentTile.getNeighbours(world, true);
 
 			neighbours.forEach(function (neighbour) {
 				var neighbourData = tileData(neighbour);
 
-				if(neighbourData.closed || neighbour.isWater())
-					// Not a valid node to process, skip to next neighbour.
+				if(neighbourData.closed || neighbour.isWater() || !entity.canMoveBetweenTiles(currentTile, neighbour))
 					return;
 
 				// The g score is the shortest distance from start to current node.
 				// We need to check if the path we have arrived at this neighbour is the shortest one we have seen yet.
-				var gScore = currentTileData.g + 1, // used to be getCost()
+				var gScore = currentTileData.g + currentTile.costTowardsTile(neighbour),
 					beenVisited = neighbourData.visited;
 
-				if (neighbourData.visited)
+				if (beenVisited && gScore >= neighbourData.g)
 					return;
 
 				neighbourData.visited = true;
 				neighbourData.parent = currentTile.id;
 				
-				neighbourData.h = neighbourData.h || heuristic(neighbour, end);
+				neighbourData.h = heuristic(neighbour, end);
 				neighbourData.g = gScore;
 				neighbourData.f = neighbourData.g + neighbourData.h;
-				
-				//graph.markDirty(neighbour);
 
 				if (closest) {
 					// If the neighbour is closer than the current closestNode or if it's equally close but has
 					// a cheaper path than the current closest node then it becomes the closest node
-					if (neighbourData.h < closestTile.h || (neighbourData.h === closestTile.h && neighbourData.g < closestTile.g)) {
-						closestTile = neighbour;
+					if (neighbourData.h < closestTileData.h || (neighbourData.h === closestTileData.h && neighbourData.g < closestTileData.g)) {
+						closestTileData = neighbourData;
 					}
 				}
 
 				if (!beenVisited) {
 					// Pushing to heap will put it in proper place based on the 'f' value.
-					_openTiles.push(neighbour);
+					_openTiles.push(neighbourData);
 				} else {
 					// Already seen the node, but since it has been rescored we need to reorder it in the heap
-					_openTiles.rescoreElement(neighbour);
+					_openTiles.rescoreElement(neighbourData);
 				}
 
 			});
+
 		}
 
 		if (closest) {
-			return resolvePathByParents(world, closestTile);
+			return resolvePathByParents(world, dataTile(closestTileData));
 		}
 
 		// No result was found - empty array signifies failure to find path.

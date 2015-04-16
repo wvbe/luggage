@@ -69,6 +69,14 @@ define([
 		return list;
 	};
 
+	World.prototype.tileForCoordinates = function (coordinates) {
+		if(typeof coordinates === 'string')
+			coordinates = coordinates.split(',').map(parseFloat);
+		if(typeof coordinates === 'object' && !Array.isArray(coordinates))
+			coordinates = [coordinates.x, coordinates.y];
+
+		return this.get(coordinates.map(Math.floor));
+	};
 	World.prototype.getTilesWithinRanges = function (center, borders, includeEmpty, includeTooClose, useManhattanDistance) {
 
 		var store = this,

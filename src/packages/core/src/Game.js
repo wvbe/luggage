@@ -32,9 +32,11 @@ define([
 		// Amount of time to iterateTerrain() when game starts. Correlates with Tile.maxRegen
 		INITIAL_TERRAIN_ITERATIONS = 11,
 
+		PLAYER_MOVE_INTERVAL = 250,
+
 		// Configuration for the key listener for player movement, arrows (InputService)
 		ARROW_KEY_CONFIG = {
-			intervalTime: 250
+			intervalTime: PLAYER_MOVE_INTERVAL
 		},
 
 		// Options for short player thought tooltips
@@ -57,8 +59,43 @@ define([
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 
+		var lastHoveredTile = null;
+
+		document.getElementById('viewport').addEventListener('mousemove', function (event) {
+			var coordinates = this.renderer.coordinatesForPixel(event.layerX, event.layerY, false),
+				hoveredTileId = coordinates.map(Math.floor).join(',');
+
+			if(lastHoveredTile && hoveredTileId === lastHoveredTile.id)
+				return;
+
+			var hoveredTile = this.world.tileForCoordinates(hoveredTileId);
+
+			// @TODO: Give Tile methods to flag it with stuff
+			if(lastHoveredTile)
+				lastHoveredTile.hovered = false;
+
+			if(hoveredTile)
+				hoveredTile.hovered = true;
+
+			console.log('Hover new tile', hoveredTile);
+			lastHoveredTile = hoveredTile;
+
+			this.renderer.clear();
+			this.renderer.render();
+		}.bind(this));
+
+		document.getElementById('viewport').addEventListener('mousedown', function (event) {
+			var destination = this.world.tileForCoordinates(
+				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
+			);
+
+			this.player.walk(this.player.findPathToTile(this.world, destination));
+		}.bind(this));
+
 		// The player
-		this.player = new Player(this.world.getSpawnTile());
+		this.player = new Player(this.world.getSpawnTile(), {
+			moveInterval: PLAYER_MOVE_INTERVAL
+		});
 		
 		// The canvas to render the player to
 		this.cursor = new Renderer(document.getElementById('player'))
@@ -168,16 +205,16 @@ define([
 		// Bind arrow keys to player movement
 		this.input
 			.configureKey(37, ARROW_KEY_CONFIG, function () { // left
-				this.player.move(this.world, -1, 0);
+				this.player.move(this.player.getTileRelativeToPosition(this.world, -1, 0));
 			}.bind(this))
 			.configureKey(38, ARROW_KEY_CONFIG, function () { // up
-				this.player.move(this.world, 0, 1);
+				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, 1));
 			}.bind(this))
 			.configureKey(39, ARROW_KEY_CONFIG, function () { // right
-				this.player.move(this.world, 1, 0);
+				this.player.move(this.player.getTileRelativeToPosition(this.world, 1, 0));
 			}.bind(this))
 			.configureKey(40, ARROW_KEY_CONFIG, function () { // down
-				this.player.move(this.world, 0, -1);
+				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, -1));
 			}.bind(this))
 			.listen();
 

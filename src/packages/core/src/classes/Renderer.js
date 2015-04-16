@@ -9,6 +9,7 @@ define([
 	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
 		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
 		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
+		ISOMETRIC_TAN = Math.tan(ISOMETRIC_ANGLE),
 		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN); // the length of a diagonal, in pixels
 
 	var TILE_SIZE = 32,
@@ -159,13 +160,13 @@ define([
 	function normalizeCoords(x,y,z) {
 		return typeof x === 'object' && !!x
 			? this.pixelForCoordinates(
-				x.x + 0.5,
-				x.y + 0.5,
+				x.x,
+				x.y,
 			x.z,
 			true)
 			: this.pixelForCoordinates(
-				x + 0.5,
-				y + 0.5,
+				x,
+				y,
 			z,
 			true);
 	}
@@ -212,14 +213,28 @@ define([
 	 * @returns {*[]}
 	 */
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
-		var rX = (x + y) * ISOMETRIC_COS,
-			rY = (x - y) * ISOMETRIC_SIN;
+		var cartX = (x + y) * ISOMETRIC_COS,
+			cartY = (x - y) * ISOMETRIC_SIN;
 		return [
-			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x + 0.5 * this.canvas.width)  + rX * TILE_SIZE,
-			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y + 0.5 * this.canvas.height) + rY * TILE_SIZE - TILE_HEIGHT * z
+			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x + 0.5 * this.canvas.width)  + cartX * TILE_SIZE, // x
+			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y + 0.5 * this.canvas.height) + cartY * TILE_SIZE - TILE_HEIGHT * z // y
 		];
 	};
 
+	Renderer.prototype.coordinatesForPixel = function (cartX, cartY, omitOffset) {
+		// assuming y = ax + b
+		cartX = cartX  - 0.5 * this.canvas.width  - (omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x);
+		cartY = -cartY + 0.5 * this.canvas.height + (omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y);
+
+		var isoY = (ISOMETRIC_TAN * cartX + cartY),
+			isoX = (cartY - isoY) / -ISOMETRIC_SIN - isoY;
+
+		// this is good so far, b should be rescaled for tile size. as
+		return [
+			isoX / TILE_SIZE,
+			isoY / TILE_SIZE
+		];
+	};
 	/**
 	 * Close and fill/stroke the last shape that was drawn
 	 * @param strokeColor
@@ -240,6 +255,10 @@ define([
 
 		return this;
 	};
+
+	Renderer.prototype.strokeLine = function (waypoints, strokeColor) {
+
+	}
 
 	/**
 	 * A circle is a circle, but this one is positioned on a set of virtual coordinates
@@ -269,7 +288,18 @@ define([
 	 */
 	Renderer.prototype.fillSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
 		this.context.beginPath();
+		drawSpatialPolygon.call(this, coordinateSets);
+		this.context.closePath();
+		return this.finishLastShape(strokeColor, fillColor);
+	};
 
+	Renderer.prototype.strokeSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
+		this.context.beginPath();
+		drawSpatialPolygon.call(this, coordinateSets);
+		return this.finishLastShape(strokeColor, fillColor);
+	};
+
+	 function drawSpatialPolygon (coordinateSets, strokeColor, fillColor) {
 		coordinateSets
 			.map(function (coords) {
 				return this.pixelForCoordinates(coords[0], coords[1], coords[2]);
@@ -277,9 +307,7 @@ define([
 			.forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
-		this.context.closePath();
 
-		return this.finishLastShape(strokeColor, fillColor);
 	};
 
 	/**

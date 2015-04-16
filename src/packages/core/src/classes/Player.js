@@ -12,11 +12,14 @@ define([
 	 * @param tile
 	 * @constructor
 	 */
-	function Player(tile) {
+	function Player(tile, options) {
 		EventEmitter.call(this);
+
+		this.options = options;
 
 		// Player location
 		this.tile = tile;
+		this.path = [];
 
 		// Some presentation stuffs
 		this.fillColor = new Color([255, 255, 255]);
@@ -31,7 +34,8 @@ define([
 			this.tile.x + dx,
 			this.tile.y + dy
 		]);
-	}
+	};
+
 	/**
 	 * Move player by a relative number of tiles horizontally and vertically
 	 * @todo Must be refactored to eat a tile instead of world, x and y
@@ -39,11 +43,7 @@ define([
 	 * @param dx
 	 * @param dy
 	 */
-	Player.prototype.move = function (world, dx, dy) {
-		var tile = (world.x !== undefined && world.y !== undefined)
-			? world
-			: this.getTileRelativeToPosition(world, dx, dy);
-
+	Player.prototype.move = function (tile) {
 		// If tile does not exist, stop
 		if(!tile) {
 			this.think(language.player.CANNOT_MOVE__EMPTY_TILE);
@@ -55,15 +55,8 @@ define([
 			return;
 		}
 
-
-		var dz = tile.z - this.tile.z;
-		if(dz > 2) {
-			this.think(language.player.CANNOT_MOVE__TOO_STEEP_UP);
-			return;
-		}
-
-		if(dz < -2) {
-			this.think(language.player.CANNOT_MOVE__TOO_STEEP_DOWN);
+		if(!this.canMoveBetweenTiles(this.tile, tile)) {
+			this.think(language.player.CANNOT_MOVE__TOO_STEEP);
 			return;
 		}
 
@@ -72,6 +65,10 @@ define([
 
 		// @TODO: Move this to a callback/even
 		this.emit('move', this.tile);
+	};
+
+	Player.prototype.canMoveBetweenTiles = function (a, b) {
+		return !(Math.abs(b.z - a.z) > 2);
 	};
 
 	/**
@@ -83,13 +80,18 @@ define([
 		this.emit('thought', message);
 	};
 
-	Player.prototype.findPathToTile = function (world, dx, dy) {
+	Player.prototype.findPathToTile = function (world, end) {
+		if(!end)
+			return [];
 
-		var end = this.getTileRelativeToPosition(world, dx, dy),
-			path = new Path(world, this.tile, end);
+		return new Path(world, this, this.tile, end);
+	};
 
-		if(!path.length)
-			this.think('Couldn\'t find a decent path!');
+	Player.prototype.walk = function (path) {
+		if(!path || !path.length) {
+			this.think(language.player.CANNOT_WALK__NO_PATH)
+			return;
+		}
 
 		var interval = setInterval(function () {
 			var tile = path.pop();
@@ -97,10 +99,11 @@ define([
 				this.move(tile);
 			else
 				clearInterval(interval);
+		}.bind(this), this.options.moveInterval || 500);
 
-		}.bind(this), 500);
+		// Remember
+		this.path = path;
 	};
-
 	/**
 	 * Tell the provided renderer how to yield a visual representation of the player
 	 * @param {Renderer} renderer
@@ -114,6 +117,12 @@ define([
 			sphereRadius,
 			this.strokeColor,
 			this.fillColor
+		);
+
+		renderer.strokeSpatialPolygon(this.path.map(function (tile) {
+				return [tile.x + 0.5, tile.y + 0.5, tile.z];
+			}),
+			this.strokeColor
 		);
 	};
 
