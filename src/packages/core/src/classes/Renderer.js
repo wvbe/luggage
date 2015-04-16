@@ -23,23 +23,39 @@ define([
 			y: 0
 		};
 
+	/**
+	 *
+	 * @todo make on() and off() methods
+	 * @todo share coordinate sets but not drawing/clearing methods between canvases
+	 * @param canvasElement
+	 * @constructor
+	 */
 	function Renderer(canvasElement) {
 		this.canvas = canvasElement;
 		this.context = this.canvas.getContext('2d');
 
 		this._render = null;
 
-		this.onResize();
+		this.resize();
 
 
-		window.addEventListener('resize', this.onResize.bind(this));
+		window.addEventListener('resize', this.resize.bind(this));
 	}
 
+	/**
+	 * Set what will happen if the renderer chooses to render
+	 * @param renderCallback
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.onRender = function (renderCallback) {
 		this._render = renderCallback;
 		return this;
 	};
 
+	/**
+	 * Actually draw stuff (whatever was configured) to the canvas
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.render = function () {
 		if(!(typeof this._render === 'function'))
 			return;
@@ -49,7 +65,11 @@ define([
 		return this;
 	};
 
-	Renderer.prototype.onResize = function () {
+	/**
+	 * Update the canvas after the dimensions might've changed
+	 * @returns {Renderer}
+	 */
+	Renderer.prototype.resize = function () {
 		var bb = this.canvas.getBoundingClientRect(),
 			newWidth = parseInt(bb.width),
 			newHeight = parseInt(bb.height);
@@ -68,25 +88,39 @@ define([
 
 		return this;
 	};
+
+	/**
+	 * Wipe all that was rendered
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.clear = function () {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		return this;
 	};
 
-
-
-	Renderer.prototype.getTileSize = function (x, y, z) {
+	/**
+	 * Get the pixel length of one virtual unit of measurement, the absolute zoom value
+	 * @returns {number}
+	 */
+	Renderer.prototype.getTileSize = function () {
 		return TILE_SIZE;
 	};
+
+	/**
+	 * Set the pixel length of a virtual unit of measurement, the absolute zoom value
+	 * @param tileSize
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.setTileSize = function (tileSize) {
 		TILE_SIZE = tileSize;
 		TILE_HEIGHT = tileSize/6;
 
 		return this;
 	};
+
 	/**
-	 * Pan to pixel values
+	 * Pan render camera to pixel values
 	 * @param {Number} x
 	 * @param {Number} y
 	 */
@@ -99,6 +133,12 @@ define([
 
 		return this;
 	};
+	/**
+	 * Position the canvas element differently (also pixel values) so that it may be transitioned with CSS
+	 * @param x
+	 * @param y
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.setViewportOffset = function (x, y) {
 		ABSOLUTE_VIEWPORT_OFFSET = {
 			x: -x,
@@ -112,11 +152,9 @@ define([
 
 		return this;
 	};
-	/**
-	 * Pan to the position of a tile
-	 * @param {Number|Tile} x
-	 * @param {Number} [y]
-	 * @param {Number} [z] CURRENTLY IGNORED
+
+	/*
+		Get the pixel XY of the center of a (tile?) on a given position
 	 */
 	function normalizeCoords(x,y,z) {
 		return typeof x === 'object' && !!x
@@ -132,6 +170,13 @@ define([
 			true);
 	}
 
+	/**
+	 * Pan render camera towards some virtual coordinates
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @returns {*}
+	 */
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
@@ -141,6 +186,14 @@ define([
 		);
 
 	};
+
+	/**
+	 * Position the canvas element correlating to some virtual coordinates
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.panViewportToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
@@ -150,6 +203,14 @@ define([
 		);
 	};
 
+	/**
+	 * Transform virtual coordinates to an X and Y
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param omitOffset
+	 * @returns {*[]}
+	 */
 	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
 		var rX = (x + y) * ISOMETRIC_COS,
 			rY = (x - y) * ISOMETRIC_SIN;
@@ -159,6 +220,12 @@ define([
 		];
 	};
 
+	/**
+	 * Close and fill/stroke the last shape that was drawn
+	 * @param strokeColor
+	 * @param fillColor
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.finishLastShape = function (strokeColor, fillColor) {
 		if(fillColor) {
 			this.setFillColor(fillColor);
@@ -173,6 +240,17 @@ define([
 
 		return this;
 	};
+
+	/**
+	 * A circle is a circle, but this one is positioned on a set of virtual coordinates
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param radius
+	 * @param strokeColor
+	 * @param fillColor
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius, strokeColor, fillColor) {
 		var center = this.pixelForCoordinates(x, y, z);
 		this.context.beginPath();
@@ -182,6 +260,13 @@ define([
 		return this.finishLastShape(strokeColor, fillColor);
 	};
 
+	/**
+	 * Any polygon
+	 * @param coordinateSets An array of virtual coordinates for each line joint, the coordinate being the array [x,y,z]
+	 * @param strokeColor
+	 * @param fillColor
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.fillSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
 		this.context.beginPath();
 
@@ -197,6 +282,17 @@ define([
 		return this.finishLastShape(strokeColor, fillColor);
 	};
 
+	/**
+	 * Render a rectangle as if it were flat on the ground
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param width
+	 * @param height
+	 * @param strokeColor
+	 * @param fillColor
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.fillFlatPlane = function (x, y, z, width, height, strokeColor, fillColor) {
 		this.context.beginPath();
 
@@ -235,7 +331,7 @@ define([
 	};
 
 	/**
-	 * Ease-of-use for a fillVerticalPlane() oriented west-to-east like a latitude, parallel
+	 * Render a vertically standing plane, oriented from east to west (latitude)
 	 * @param x
 	 * @param y
 	 * @param z
@@ -247,7 +343,7 @@ define([
 	};
 
 	/**
-	 * Ease-of-use for a fillVerticalPlane() oriented north-to-south like a longitude, meridian
+	 * Render a vertically standing plane, oriented from north to south (longitude)
 	 * @param x
 	 * @param y
 	 * @param z
@@ -257,7 +353,19 @@ define([
 	Renderer.prototype.fillNorthToSouthPlane = function (x, y, z, length, height, strokeColor, fillColor) {
 		return this.fillVerticalPlane(x, y, z, x, y + length, z, height, strokeColor, fillColor);
 	};
-	
+
+	/**
+	 * Render an isometric box
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param width
+	 * @param length
+	 * @param height
+	 * @param strokeColor
+	 * @param fillColor
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.fillBox = function (x, y, z, width, length, height, strokeColor, fillColor) {
 		return this
 			.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.1))
@@ -266,12 +374,24 @@ define([
 	};
 
 
+	/**
+	 * Set a fill color for the next shape that is drawn
+	 * @todo deprecate
+	 * @param color
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.setFillColor = function(color) {
 		this.context.fillStyle = color.toString();
 
 		return this;
 	};
 
+	/**
+	 * Set a stroke color for the next shape that is drawn
+	 * @todo deprecate
+	 * @param color
+	 * @returns {Renderer}
+	 */
 	Renderer.prototype.setStrokeColor = function(color) {
 		this.context.strokeStyle = color.toString();
 

@@ -1,5 +1,6 @@
 define([
-], function () {
+	'./BinaryHeap'
+], function (BinaryHeap) {
 
 
 	function pythagoras (x, y) {
@@ -29,6 +30,12 @@ define([
 		return array[Math.floor(Math.random() * array.length)];
 	}
 
+	function randomDeviation (max) {
+		if (max === undefined)
+			max = 1;
+		return max * (1 - Math.random() * 2);
+	}
+
 	// http://davidwalsh.name/javascript-debounce-function
 	function debounce(func, wait, immediate) {
 		var timeout;
@@ -46,9 +53,13 @@ define([
 	}
 
 	return {
+		BinaryHeap: BinaryHeap,
+
+
 		debounce: debounce,
 		pythagoras: pythagoras,
 		shuffle: shuffle,
-		randomFromArray: randomFromArray
+		randomFromArray: randomFromArray,
+		randomDeviation: randomDeviation
 	};
 });

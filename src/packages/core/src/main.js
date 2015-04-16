@@ -1,9 +1,9 @@
 define([
-	'./Application'
+	'./Game'
 ], function (
-	Application
+	Game
 ) {
 	return {
-		Application: Application
+		Game: Game
 	}
 });

@@ -1,7 +1,9 @@
 define([
-	'Color'
+	'Color',
+	'util'
 ], function(
-	Color
+	Color,
+	util
 	) {
 
 	// Must be known in order to produce a valid color range for all possible tiles
@@ -10,6 +12,9 @@ define([
 		Z_BEACH_LEVEL = 1,
 		Z_GRASS_LEVEL = 3,
 		Z_BARREN_LEVEL = 9,
+
+		// The virtual Z offset that is given to the waterline, to make it more distinct
+		ACTUAL_WATERLINE_Z = -0.5,
 
 		MAX_TILE_Z = Z_BARREN_LEVEL,
 
@@ -21,6 +26,7 @@ define([
 			lightness: 1,
 			alpha: 0.2
 		}),
+
 		COLOR_UNDETERMINED_STROKE = new Color({
 			hue: 0,
 			saturation: 0,
@@ -28,13 +34,17 @@ define([
 			alpha: 0.3
 		});
 
+	function getIdForCoordinates (x, y) {
+		return x + ',' + y;
+	}
+
 	function Tile(x, y, z) {
-		this.id = this.getIdForCoordinates(x, y);
+		this.id = getIdForCoordinates(x, y);
 		this.x = Math.round(x);
 		this.y = Math.round(y);
-		this.z = z || 0;//0.5 * Math.random(); // at sea level, not in use for now
+		this.z = z || (Z_SEA_LEVEL + util.randomDeviation(4));
 		this.regens = 0;
-		this.maxRegens = MAX_TILE_REGENS + randomRatio(2);
+		this.maxRegens = MAX_TILE_REGENS + util.randomDeviation(2);
 
 //		this.corners = [];
 
@@ -43,21 +53,6 @@ define([
 		this.strokeColor = COLOR_UNDETERMINED_STROKE;
 	}
 
-	/**
-	 * Formats the ID given to a tile for a certain x/y position
-	 * @param x
-	 * @param y
-	 * @returns {string}
-	 */
-	Tile.prototype.getIdForCoordinates = function (x, y) {
-		return x + ',' + y;
-	};
-
-	Tile.prototype.getCoordinatesForId  = function (id) {
-		return id.split(',').map(function (coord) {
-			return parseInt(coord);
-		});
-	};
 	Tile.prototype.canStillBeChanged  = function () {
 		return this.regens < this.maxRegens;
 	};
@@ -65,15 +60,15 @@ define([
 	Tile.prototype.getAllNeighbourIds = function () {
 		if(!this.neighbourIds)
 			this.neighbourIds = [
-				this.getIdForCoordinates(this.x, this.y + 1), // North
-				this.getIdForCoordinates(this.x - 1, this.y), // West
-				this.getIdForCoordinates(this.x + 1, this.y), // East
-				this.getIdForCoordinates(this.x, this.y - 1),  // South
+				getIdForCoordinates.call(this, this.x, this.y + 1), // North
+				getIdForCoordinates.call(this, this.x - 1, this.y), // West
+				getIdForCoordinates.call(this, this.x + 1, this.y), // East
+				getIdForCoordinates.call(this, this.x, this.y - 1),  // South
 
-				this.getIdForCoordinates(this.x - 1, this.y - 1), // South-west
-				this.getIdForCoordinates(this.x + 1, this.y + 1), // North-east
-				this.getIdForCoordinates(this.x + 1, this.y - 1), // South-east
-				this.getIdForCoordinates(this.x -1 , this.y + 1)  // North-west
+				getIdForCoordinates.call(this, this.x - 1, this.y - 1), // South-west
+				getIdForCoordinates.call(this, this.x + 1, this.y + 1), // North-east
+				getIdForCoordinates.call(this, this.x + 1, this.y - 1), // South-east
+				getIdForCoordinates.call(this, this.x -1 , this.y + 1)  // North-west
 			];
 
 		return this.neighbourIds;
@@ -85,6 +80,11 @@ define([
 		});
 	};
 
+	/**
+	 * @todo contemplate necessity
+	 * @param registry
+	 * @returns {Array.<T>|*}
+	 */
 	Tile.prototype.getNeighbours = function (registry) {
 		return this.getAllNeighbours(registry).filter(function (tile) {
 			return !!tile;
@@ -97,16 +97,10 @@ define([
 		});
 	};
 
-	function randomRatio (max) {
-		if (max === undefined)
-			max = 1;
-		return max * (1 - Math.random() * 2);
-	}
+
 	Tile.prototype.updateColorsForRegistry = function (registry) {
 		if(this.canStillBeChanged())
 			return;
-
-
 
 		var tileRelativeHeight = this.z / MAX_TILE_Z;
 
@@ -117,25 +111,23 @@ define([
 		});
 
 		if(this.isWater()) {
-//			this.fillColor = new Color({ // water
-//					hue: 189 + randomRatio(4),
-//					saturation: 0.77 + randomRatio(0.03),
-//					lightness: this.z/4 * 0.32 + randomRatio(0.05),
-//					alpha: 0.7
-//				});
+			// Keep the default color
 
 		} else if (this.z <= Z_BEACH_LEVEL) {
+			// Tile color is a blend between regular and sandy tile color
 			this.fillColor = baseColor.blend(new Color({ // beach color
-					hue: 30 + randomRatio(4),
-					saturation: 0.49 + randomRatio(0.03),
-					lightness: 0.60 + randomRatio(0.05)
+					hue: 30 + util.randomDeviation(4),
+					saturation: 0.49 + util.randomDeviation(0.03),
+					lightness: 0.60 + util.randomDeviation(0.05)
 				}), 0.8);
 
 		} else if (this.z <= Z_GRASS_LEVEL) {
+			// Tile color is just the base color
 			this.fillColor = baseColor;
-			// maintain normal color
 		}
 
+		// If tile is above a certain level, gradually desaturate and lighten it, making it look like
+		// arid rocks and eventually snow.
 		if (this.z > Z_GRASS_LEVEL && this.z <= Z_BARREN_LEVEL) {
 			var levelOfBarrenness = (this.z - Z_GRASS_LEVEL)/(Z_BARREN_LEVEL-Z_GRASS_LEVEL);
 			this.fillColor = baseColor
@@ -163,27 +155,14 @@ define([
 //			}, 0)/4;
 //		}.bind(this));
 
-
 		if(!this.isWater())
 			this.strokeColor = this.fillColor.darkenByRatio(0.1);
-
 	};
 
 	Tile.prototype.isWater = function () {
 		return this.z <= Z_SEA_LEVEL;
 	};
-	/**
-	 *
-	 * @param {Renderer} renderer
-	 */
 
-	function equalizeCornerZIfCloseEnough(coords, corner, z) {
-		if(Math.abs(corner - z) < 2)
-			return coords.concat([corner || ACTUAL_WATERLINE_Z]);
-		return coords.concat([z || ACTUAL_WATERLINE_Z]);
-	}
-
-	var ACTUAL_WATERLINE_Z = -0.5;
 	Tile.prototype.render = function (renderer) {
 		if(this.isWater()) {
 			renderer.fillFlatPlane (
@@ -207,7 +186,7 @@ define([
 				this.fillColor.lightenByRatio(0.3));
 
 		}
-		//Z_SEA_LEVEL
+		
 		if(
 			!this.canStillBeChanged() // Must be fully computed
 			&& this.z > Z_BEACH_LEVEL // And cannot be on or below a beach
@@ -215,16 +194,6 @@ define([
 			&& Math.random() < 0.1 // Only one out of 10 elegible tiles actually get an artifac
 		)
 			this.renderRandomArtifact(renderer);
-	};
-
-	Tile.prototype.markAsLastSeen = function (registry) {
-		if(this.timeout) {
-			clearTimeout(this.timeout);
-		}
-
-		this.timeout = setTimeout(function () {
-			registry.delete(this.x + ',' + this.y);
-		}.bind(this), 5000);
 	};
 
 	Tile.prototype.renderRandomArtifact = function (renderer) {
