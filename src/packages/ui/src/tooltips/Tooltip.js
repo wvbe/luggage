@@ -4,7 +4,8 @@ define([], function(
 	) {
 
 
-	function Tooltip(content, options) {
+	function Tooltip(coordinates, content, options) {
+		this.coordinates = coordinates;
 		this.content = content;
 		this.options = options || {};
 		this.classes = [
@@ -24,6 +25,10 @@ define([], function(
 
 	};
 
+	Tooltip.prototype.getElement = function () {
+		return this._element;
+	};
+
 	Tooltip.prototype.createElement = function () {
 		var element = document.createElement('div');
 
@@ -31,11 +36,12 @@ define([], function(
 			element.classList.add(className);
 		});
 
-		element.innerHTML = this.content;
-
 		return element;
 	};
 
+	Tooltip.prototype.getOrCreateElement = function () {
+		return this.getElement() || this.createElement();
+	};
 	Tooltip.prototype.getElement = function () {
 		if(!this._element) {
 			this._element = this.createElement();

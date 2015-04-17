@@ -3,12 +3,14 @@ define([
 	'./TooltipSlot',
 
 	'./tooltips/Tooltip',
+	'./tooltips/MenuTooltip',
 	'./tooltips/RandomLanguageTooltip'
 ], function (
 	TooltipService,
 	TooltipSlot,
 
 	Tooltip,
+	MenuTooltip,
 	RandomLanguageTooltip
 ) {
 	return {
@@ -16,6 +18,7 @@ define([
 		TooltipSlot: TooltipSlot,
 
 		Tooltip: Tooltip,
+		MenuTooltip: MenuTooltip,
 		RandomLanguageTooltip: RandomLanguageTooltip
 	}
 });

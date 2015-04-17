@@ -1,9 +1,13 @@
 define([
 	'Color',
-	'util'
+	'util',
+
+	'./ArtifactHouse'
 ], function(
 	Color,
-	util
+	util,
+
+	ArtifactHouse
 	) {
 
 	// Must be known in order to produce a valid color range for all possible tiles
@@ -45,6 +49,9 @@ define([
 		this.x = Math.round(x);
 		this.y = Math.round(y);
 		this.z = z || (Z_SEA_LEVEL + util.randomDeviation(4));
+
+		this.artifacts = [];
+
 		this.regens = 0;
 		this.maxRegens = MAX_TILE_REGENS + util.randomDeviation(2);
 
@@ -101,6 +108,21 @@ define([
 		});
 	};
 
+	Tile.prototype.getMenuItems = function () {
+		return this.artifacts.reduce(function (items, artifact) {
+			return items.concat(artifact.getMenuItems());
+		}, []);
+	};
+
+	Tile.prototype.getSurfaceCoordinates = function () {
+		return [this.x, this.y, this.z];
+	};
+
+	Tile.prototype.triggerArtifactMenu = function () {
+		var menuItems = this.getMenuItems();
+
+		console.log('Opening', menuItems);
+	};
 
 	Tile.prototype.updateColorsForRegistry = function (registry) {
 		if(this.canStillBeChanged())
@@ -162,6 +184,10 @@ define([
 
 		if(!this.isWater())
 			this.strokeColor = this.fillColor.darkenByRatio(0.3);
+
+
+		if(!this.isWater() && this.z > Z_BEACH_LEVEL && this.z < Z_BARREN_LEVEL)
+			this.addArtifact(new ArtifactHouse(this));
 	};
 
 	Tile.prototype.isWater = function () {
@@ -194,39 +220,15 @@ define([
 				this.strokeColor,
 				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
 			);
-
 		}
-		
-//		if(
-//			!this.canStillBeChanged() // Must be fully computed
-//			&& this.z > Z_BEACH_LEVEL // And cannot be on or below a beach
-//			&& this.z <= Z_GRASS_LEVEL // And should be on or below grass
-//			&& Math.random() < 0.1 // Only one out of 10 elegible tiles actually get an artifac
-//		)
-//			this.renderRandomArtifact(renderer);
+
+		this.artifacts.forEach(function (artifact) {
+			artifact.render(renderer, this);
+		}.bind(this));
 	};
 
-	Tile.prototype.renderRandomArtifact = function (renderer) {
-		var buildingSize = [
-				0.05 + Math.random() * 0.2,
-				0.05 + Math.random() * 0.2,
-				0.2 + Math.random() * 0.3
-			],
-			buildingOffset = [
-				Math.random() * (1 - buildingSize[0]),
-				Math.random() * (1 - buildingSize[1])
-			];
-
-		renderer.fillBox(
-			this.x + buildingOffset[0],
-			this.y + buildingOffset[1],
-			this.z,
-			buildingSize[0],
-			buildingSize[1],
-			buildingSize[2],
-			this.strokeColor,
-			this.fillColor.lightenByRatio(0.7)
-		);
+	Tile.prototype.addArtifact = function (artifact) {
+		this.artifacts.push(artifact);
 	};
 
 	return Tile;

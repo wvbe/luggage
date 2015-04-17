@@ -33,7 +33,9 @@ define([
 	 */
 	function Renderer(canvasElement) {
 		this.canvas = canvasElement;
-		this.context = this.canvas.getContext('2d');
+
+		if(canvasElement.localName === 'canvas')
+			this.context = this.canvas.getContext('2d');
 
 		this._render = null;
 

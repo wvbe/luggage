@@ -26,7 +26,6 @@ define([
 				parent = tileData(curr).parent,
 				path = [];
 			while(parent) {
-				console.log(curr.id);
 				if(path.indexOf(curr) >= 0)
 					throw new Error('WTF path is a loop');
 				path.push(curr);
@@ -76,9 +75,6 @@ define([
 			// End case -- result has been found, return the traced path.
 			if(currentTile === end) {
 				var path = resolvePathByParents(world, end);
-				console.log('Resolved path');
-				console.log('path length', path.length);
-				console.log('open tiles left', _openTiles.size());
 				return path;
 			}
 

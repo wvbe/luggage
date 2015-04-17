@@ -42,6 +42,9 @@ define([
 		// Options for short player thought tooltips
 		PLAYER_LANGUAGE_TOOLTIP_OPTIONS = {
 			timeout: 500
+		},
+		MENU_TOOLTIP_OPTIONS = {
+			timeout: 500000
 		};
 
 	/**
@@ -52,12 +55,43 @@ define([
 		// If you wanna know which buttons are being pushed, talk to this guy right here
 		this.input = new InputService();
 
+		// Service that handles the player character's mental or verbal expressions
+		this.expressions = new ui.TooltipSlot('expressions', {}, document.getElementById('expressions'));
+
 		// Contains the material that makes up a comprehensive world
 		this.world = new World(this);
 
 		// The canvas to render the world to, if you so please
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
+
+
+		this.worldTooltipRenderer = new Renderer(document.getElementById('expressions'))
+			.onRender(function (renderer) {
+				console.log('Updating tooltip position');
+				var tooltip = this.expressions.getCurrent();
+
+				if(!tooltip)
+					return;
+
+				var cartOffset = renderer.pixelForCoordinates(
+					tooltip.coordinates[0],
+					tooltip.coordinates[1],
+					tooltip.coordinates[2],
+					false
+				),
+				tooltipElement = tooltip.getOrCreateElement();
+
+				if(!tooltipElement.parentElement !== renderer.canvas) {
+					renderer.canvas.appendChild(tooltipElement);
+				}
+
+				console.log('CART OFFSET FOR TOOLTIP', tooltip, cartOffset);
+
+				tooltipElement.style.bottom = (renderer.canvas.height - cartOffset[1]) + 'px';
+				tooltipElement.style.left= cartOffset[0] + 'px';
+			}.bind(this));
+
 
 		// The player
 		this.player = new Player(this.world.getSpawnTile(), {
@@ -67,9 +101,7 @@ define([
 		// The canvas to render the player to
 		this.cursor = new Renderer(document.getElementById('player'))
 			.onRender(this.player.renderEntity.bind(this.player));
-		
-		// Service that handles the player character's mental or verbal expressions
-		this.expressions = new ui.TooltipSlot('expressions', {}, document.getElementById('expressions'));
+
 
 		// Parallax scrolling to 
 		this.backdrop = document.getElementById('backdrop');
@@ -85,8 +117,13 @@ define([
 	Game.prototype._init = function () {
 		// Player thoughts make tooltips
 		this.player.on('thought', function (message) {
-			this.expressions.open(new ui.RandomLanguageTooltip(message, PLAYER_LANGUAGE_TOOLTIP_OPTIONS));
+			this.expressions.open(new ui.RandomLanguageTooltip(
+				this.player.tile.getSurfaceCoordinates(),
+				message,
+				PLAYER_LANGUAGE_TOOLTIP_OPTIONS
+			));
 		}.bind(this));
+
 
 		// Generate the initial contents of the world, and iterate it 11 times
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, FOG_OF_WAR_DISTANCE));
@@ -142,12 +179,36 @@ define([
 			this.renderer.render();
 		}.bind(this));
 
-		document.getElementById('viewport').addEventListener('mousedown', function (event) {
-			var destination = this.world.tileForCoordinates(
-				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
-			);
+		var viewportElement = document.getElementById('viewport');
+		viewportElement.addEventListener('mousedown', function (event) {
+			var offset = getClickOffsetInParent(event, viewportElement);
 
-			this.player.walk(this.player.findPathToTile(this.world, destination));
+			var tile = this.world.tileForCoordinates(
+				this.renderer.coordinatesForPixel(offset[0], offset[1], false)
+			);
+			switch(event.which) {
+				case 1:
+					this.player.walk(this.player.findPathToTile(this.world, tile));
+					break;
+				default: // middle mouse
+					break;
+			}
+
+			return false;
+		}.bind(this));
+
+		document.addEventListener('contextmenu', function(event) {
+			if(event.ctrlKey)
+				return; // Default/do nothing on all mouseclicks as long as ctrl is pressed
+
+			event.preventDefault();
+
+			var offset = getClickOffsetInParent(event, viewportElement),
+				tile = this.world.tileForCoordinates(
+				this.renderer.coordinatesForPixel(offset[0], offset[1], false)
+			);
+			this.expressions.open(new ui.MenuTooltip(tile.getSurfaceCoordinates(), tile.getMenuItems(), MENU_TOOLTIP_OPTIONS));
+			this.worldTooltipRenderer.render();
 		}.bind(this));
 
 	};
@@ -190,6 +251,9 @@ define([
 			.panToTile(tile.x, tile.y, 0)
 			.clear()
 			.render();
+		this.worldTooltipRenderer
+			//.panViewportToTile(tile.x, tile.y, 0)
+			.render();
 	};
 
 	/**
@@ -220,6 +284,27 @@ define([
 			.listen();
 
 	};
+
+
+
+	function getClickOffsetInParent(event, clickableElement) {
+		var clickedElement = null,
+			clickOffsetX = event.layerX,
+			clickOffsetY = event.layerY;
+
+		if (event.target !== clickableElement) {
+			while (clickedElement !== clickableElement) {
+				clickedElement = clickedElement ? clickedElement.parentElement : event.target;
+
+				var position = clickedElement.getBoundingClientRect();
+
+				clickOffsetX = clickOffsetX + position.left;
+				clickOffsetY = clickOffsetY + position.top;
+			}
+		}
+
+		return [clickOffsetX, clickOffsetY];
+	}
 
 	/**
 	 * Makes alterations to the terrain, centering on a given tile

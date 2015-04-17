@@ -7,9 +7,10 @@ define([
 ) {
 
 
-	function RandomLanguageTooltip(content, options) {
+	function RandomLanguageTooltip(coordinates, content, options) {
 		Tooltip.call(
 			this,
+			coordinates,
 			Array.isArray(content)
 				? util.randomFromArray(content)
 				: content,
@@ -22,6 +23,8 @@ define([
 
 	RandomLanguageTooltip.prototype.createElement = function () {
 		var element = Tooltip.prototype.createElement.apply(this, arguments);
+
+		element.innerHTML = this.content;
 
 		return element;
 	};
