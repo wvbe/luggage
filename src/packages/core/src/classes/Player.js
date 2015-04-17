@@ -89,7 +89,7 @@ define([
 
 	Player.prototype.walk = function (path) {
 		if(!path || !path.length) {
-			this.think(language.player.CANNOT_WALK__NO_PATH)
+			this.think(language.player.CANNOT_WALK__NO_PATH);
 			return;
 		}
 
@@ -119,11 +119,13 @@ define([
 			this.fillColor
 		);
 
-		renderer.strokeSpatialPolygon(this.path.map(function (tile) {
+		renderer.context.lineWidth = 3;
+		renderer.strokeSpatialPolygon(this.path.concat([this.tile]).map(function (tile) {
 				return [tile.x + 0.5, tile.y + 0.5, tile.z];
 			}),
-			this.strokeColor
+			new Color('yellow').setAlpha(0.7)
 		);
+		renderer.context.lineWidth = 1;
 	};
 
 	return Player;

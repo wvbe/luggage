@@ -169,7 +169,7 @@ define([
 	};
 
 	Tile.prototype.costTowardsTile = function (tile) {
-		return 1 + Math.abs(this.z - tile.z);
+		return 1 + Math.pow(this.z - tile.z, 2);
 	};
 
 	Tile.prototype.render = function (renderer) {
@@ -197,13 +197,13 @@ define([
 
 		}
 		
-		if(
-			!this.canStillBeChanged() // Must be fully computed
-			&& this.z > Z_BEACH_LEVEL // And cannot be on or below a beach
-			&& this.z <= Z_GRASS_LEVEL // And should be on or below grass
-			&& Math.random() < 0.1 // Only one out of 10 elegible tiles actually get an artifac
-		)
-			this.renderRandomArtifact(renderer);
+//		if(
+//			!this.canStillBeChanged() // Must be fully computed
+//			&& this.z > Z_BEACH_LEVEL // And cannot be on or below a beach
+//			&& this.z <= Z_GRASS_LEVEL // And should be on or below grass
+//			&& Math.random() < 0.1 // Only one out of 10 elegible tiles actually get an artifac
+//		)
+//			this.renderRandomArtifact(renderer);
 	};
 
 	Tile.prototype.renderRandomArtifact = function (renderer) {
