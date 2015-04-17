@@ -123,20 +123,19 @@ define([
 
 		// @TODO: Give Tile methods to flag it with stuff
 		document.getElementById('viewport').addEventListener('mousemove', function (event) {
-			var coordinates = this.renderer.coordinatesForPixel(event.layerX, event.layerY, false),
-				hoveredTileId = coordinates.map(Math.floor).join(','),
-				hoveredTile = hoveredTileId ? this.world.tileForCoordinates(hoveredTileId) : undefined;
+			var hoveredTile = this.world.tileForCoordinates(
+				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
+			);
 
 			if(hoveredTile === lastHoveredTile)
 				return;
 
 			if(hoveredTile)
-				if(hoveredTile) hoveredTile.hovered = true;
+				hoveredTile.hovered = true;
 
 			if(lastHoveredTile)
 				lastHoveredTile.hovered = false;
 
-			console.log('Hover new tile', hoveredTile);
 			lastHoveredTile = hoveredTile;
 
 			this.renderer.clear();
