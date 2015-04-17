@@ -59,39 +59,6 @@ define([
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 
-		var lastHoveredTile = null;
-
-		document.getElementById('viewport').addEventListener('mousemove', function (event) {
-			var coordinates = this.renderer.coordinatesForPixel(event.layerX, event.layerY, false),
-				hoveredTileId = coordinates.map(Math.floor).join(',');
-
-			if(lastHoveredTile && hoveredTileId === lastHoveredTile.id)
-				return;
-
-			var hoveredTile = this.world.tileForCoordinates(hoveredTileId);
-
-			// @TODO: Give Tile methods to flag it with stuff
-			if(lastHoveredTile)
-				lastHoveredTile.hovered = false;
-
-			if(hoveredTile)
-				hoveredTile.hovered = true;
-
-			console.log('Hover new tile', hoveredTile);
-			lastHoveredTile = hoveredTile;
-
-			this.renderer.clear();
-			this.renderer.render();
-		}.bind(this));
-
-		document.getElementById('viewport').addEventListener('mousedown', function (event) {
-			var destination = this.world.tileForCoordinates(
-				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
-			);
-
-			this.player.walk(this.player.findPathToTile(this.world, destination));
-		}.bind(this));
-
 		// The player
 		this.player = new Player(this.world.getSpawnTile(), {
 			moveInterval: PLAYER_MOVE_INTERVAL
@@ -99,7 +66,7 @@ define([
 		
 		// The canvas to render the player to
 		this.cursor = new Renderer(document.getElementById('player'))
-			.onRender(this.player.renderCharacter.bind(this.player));
+			.onRender(this.player.renderEntity.bind(this.player));
 		
 		// Service that handles the player character's mental or verbal expressions
 		this.expressions = new ui.TooltipSlot('expressions', {}, document.getElementById('expressions'));
@@ -149,6 +116,41 @@ define([
 
 		// Reset viewport
 		this.focusOnTile(this.getPlayerLocation());
+
+		// Set up mouse tracking (hover and clicks)
+
+		var lastHoveredTile = undefined;
+
+		// @TODO: Give Tile methods to flag it with stuff
+		document.getElementById('viewport').addEventListener('mousemove', function (event) {
+			var coordinates = this.renderer.coordinatesForPixel(event.layerX, event.layerY, false),
+				hoveredTileId = coordinates.map(Math.floor).join(','),
+				hoveredTile = hoveredTileId ? this.world.tileForCoordinates(hoveredTileId) : undefined;
+
+			if(hoveredTile === lastHoveredTile)
+				return;
+
+			if(hoveredTile)
+				if(hoveredTile) hoveredTile.hovered = true;
+
+			if(lastHoveredTile)
+				lastHoveredTile.hovered = false;
+
+			console.log('Hover new tile', hoveredTile);
+			lastHoveredTile = hoveredTile;
+
+			this.renderer.clear();
+			this.renderer.render();
+		}.bind(this));
+
+		document.getElementById('viewport').addEventListener('mousedown', function (event) {
+			var destination = this.world.tileForCoordinates(
+				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
+			);
+
+			this.player.walk(this.player.findPathToTile(this.world, destination));
+		}.bind(this));
+
 	};
 	/**
 	 * Enlarge (or opposite) the world as you see it
