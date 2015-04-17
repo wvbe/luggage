@@ -93,6 +93,7 @@ define([
 			return;
 		}
 
+		this.move(path.pop());
 		var interval = setInterval(function () {
 			var tile = path.pop();
 			if(tile)
