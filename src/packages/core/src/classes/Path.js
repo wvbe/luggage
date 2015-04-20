@@ -32,7 +32,7 @@ define([
 				curr = world.get(parent);
 				parent = tileData(curr).parent;
 			}
-			return path;
+			return path.reverse();
 		}
 
 		function dataTile(data) {

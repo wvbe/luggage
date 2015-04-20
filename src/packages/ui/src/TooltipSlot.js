@@ -14,8 +14,7 @@ define([
 		if(!this.isOpen())
 			return;
 
-
-		if(!this.current.getElement().parentElement !== this._element)
+		if(this.current.getElement().parentElement === this._element)
 			this._element.removeChild(this.current.getElement());
 
 		this.clearTimeout();
@@ -31,11 +30,13 @@ define([
 			this._timeout = null;
 		}
 	};
+
 	TooltipSlot.prototype.setTimeout = function (time) {
 		this._timeout = setTimeout(function () {
 			this.close();
 		}.bind(this), time);
 	};
+
 	TooltipSlot.prototype.open = function (tooltip) {
 		if(this.isOpen()) {
 			this.close();
@@ -43,6 +44,8 @@ define([
 
 		if(tooltip.getTimeout())
 			this.setTimeout(tooltip.getTimeout());
+
+		tooltip.setCloseHandler(this.close.bind(this));
 
 		this.current = tooltip;
 

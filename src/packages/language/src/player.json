@@ -16,6 +16,7 @@
 		"Not gonna swim",
 		"Not swimming bro!"
 	],
+	"CANNOT_MOVE__NOT_NEIGHBOUR": false,
 	"CANNOT_WALK__NO_PATH": [
 		"U mad, no way of getting there",
 		"Cannot be reached",

@@ -45,7 +45,9 @@ define([
 		},
 		MENU_TOOLTIP_OPTIONS = {
 			timeout: 500000
-		};
+		},
+
+		THEME_CURRENT_COLOR = new Color('blue');
 
 	/**
 	 *
@@ -65,29 +67,29 @@ define([
 		this.renderer = new Renderer(document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 
-
 		this.worldTooltipRenderer = new Renderer(document.getElementById('expressions'))
 			.onRender(function (renderer) {
-				console.log('Updating tooltip position');
 				var tooltip = this.expressions.getCurrent();
 
 				if(!tooltip)
 					return;
 
 				var cartOffset = renderer.pixelForCoordinates(
-					tooltip.coordinates[0],
-					tooltip.coordinates[1],
-					tooltip.coordinates[2],
-					false
-				),
-				tooltipElement = tooltip.getOrCreateElement();
+						tooltip.coordinates[0],
+						tooltip.coordinates[1],
+						tooltip.coordinates[2],
+						false
+					),
 
+					// Grab the existing element for this tooltip or make one
+					tooltipElement = tooltip.getOrCreateElement();
+
+				// If element isn't already in the canvas, put it there
 				if(!tooltipElement.parentElement !== renderer.canvas) {
 					renderer.canvas.appendChild(tooltipElement);
 				}
 
-				console.log('CART OFFSET FOR TOOLTIP', tooltip, cartOffset);
-
+				// This renderer is not pannable, instead offset tooltips
 				tooltipElement.style.bottom = (renderer.canvas.height - cartOffset[1]) + 'px';
 				tooltipElement.style.left= cartOffset[0] + 'px';
 			}.bind(this));
@@ -116,13 +118,8 @@ define([
 	 */
 	Game.prototype._init = function () {
 		// Player thoughts make tooltips
-		this.player.on('thought', function (message) {
-			this.expressions.open(new ui.RandomLanguageTooltip(
-				this.player.tile.getSurfaceCoordinates(),
-				message,
-				PLAYER_LANGUAGE_TOOLTIP_OPTIONS
-			));
-		}.bind(this));
+		this.player.on('thought', this.playerTooltip.bind(this));
+
 
 
 		// Generate the initial contents of the world, and iterate it 11 times
@@ -250,7 +247,8 @@ define([
 		this.cursor
 			.panToTile(tile.x, tile.y, 0)
 			.clear()
-			.render();
+			.render()
+			.fillTileHalo(tile, null, 0);
 		this.worldTooltipRenderer
 			//.panViewportToTile(tile.x, tile.y, 0)
 			.render();
@@ -285,7 +283,17 @@ define([
 
 	};
 
+	Game.prototype.playerTooltip = function (input) {
+		if(input instanceof Error)
+			input = input.message;
 
+		this.expressions.open(new ui.RandomLanguageTooltip(
+			this.player.tile.getSurfaceCoordinates(),
+			input,
+			PLAYER_LANGUAGE_TOOLTIP_OPTIONS
+		));
+		this.worldTooltipRenderer.render();
+	};
 
 	function getClickOffsetInParent(event, clickableElement) {
 		var clickedElement = null,

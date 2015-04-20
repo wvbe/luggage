@@ -38,7 +38,8 @@ define([
 			alpha: 0.3
 		}),
 
-		COLOR_HOVERED_FILL = new Color('yellow');
+		COLOR_HOVERED_FILL = new Color('yellow'),
+		RENDER_MODE_BOX = 'cube';
 
 	function getIdForCoordinates (x, y) {
 		return x + ',' + y;
@@ -63,7 +64,7 @@ define([
 	}
 
 	Tile.prototype.canStillBeChanged  = function () {
-		return this.regens < this.maxRegens;
+		return !this.locked;
 	};
 
 	Tile.prototype.getAllNeighbourIds = function (ignoreDiagonals) {
@@ -83,6 +84,10 @@ define([
 			]);
 
 		return neighbourIds;
+	};
+
+	Tile.prototype.isNeighbourOf = function (tile, ignoreDiagonals) {
+		return this.getAllNeighbourIds(ignoreDiagonals).indexOf(tile.id) >= 0;
 	};
 
 	Tile.prototype.getAllNeighbours = function (registry, ignoreDiagonals) {
@@ -124,11 +129,15 @@ define([
 		console.log('Opening', menuItems);
 	};
 
-	Tile.prototype.updateColorsForRegistry = function (registry) {
-		if(this.canStillBeChanged())
+	Tile.prototype.lock = function (registry) {
+
+		if(!this.canStillBeChanged())
 			return;
 
-		var tileRelativeHeight = this.z / MAX_TILE_Z;
+		this.locked = true;
+
+
+		var tileRelativeHeight = (this.z > MAX_TILE_Z ? MAX_TILE_Z : this.z) / MAX_TILE_Z;
 		var baseColor = new Color({
 			hue: 82,
 			saturation: 0.5,
@@ -153,8 +162,10 @@ define([
 
 		// If tile is above a certain level, gradually desaturate and lighten it, making it look like
 		// arid rocks and eventually snow.
-		if (this.z > Z_GRASS_LEVEL && this.z <= Z_BARREN_LEVEL) {
+		if (this.z > Z_GRASS_LEVEL) {
 			var levelOfBarrenness = (this.z - Z_GRASS_LEVEL)/(Z_BARREN_LEVEL-Z_GRASS_LEVEL);
+			if(levelOfBarrenness < 0)
+				debugger;
 			this.fillColor = baseColor
 				.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
 				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
@@ -186,7 +197,7 @@ define([
 			this.strokeColor = this.fillColor.darkenByRatio(0.3);
 
 
-		if(!this.isWater() && this.z > Z_BEACH_LEVEL && this.z < Z_BARREN_LEVEL)
+		if(!this.isWater() && this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL && Math.random() < 0.1)
 			this.addArtifact(new ArtifactHouse(this));
 	};
 
@@ -210,16 +221,19 @@ define([
 				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
 			);
 		} else {
-			renderer.fillBox(
-				this.x,
-				this.y,
-				0 + ACTUAL_WATERLINE_Z,
-				1,
-				1,
-				this.z + ACTUAL_WATERLINE_Z,
-				this.strokeColor,
-				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
-			);
+			if(RENDER_MODE_BOX === 'halo' || this.hovered)
+				renderer.fillTileHalo(this, this.strokeColor, this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0), 0);
+			else// if(RENDER_MODE_BOX === 'cube')
+				renderer.fillBox(
+					this.x,
+					this.y,
+					0 + ACTUAL_WATERLINE_Z,
+					1,
+					1,
+					this.z + ACTUAL_WATERLINE_Z,
+					this.strokeColor,
+					this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
+				);
 		}
 
 		this.artifacts.forEach(function (artifact) {

@@ -37,32 +37,38 @@ define([
 	};
 
 	/**
-	 * Move player by a relative number of tiles horizontally and vertically
 	 * @todo Must be refactored to eat a tile instead of world, x and y
 	 * @param {Tile} tile
 	 */
 	Entity.prototype.move = function (tile) {
-		// If tile does not exist, stop
-		if(!tile) {
-			this.think(language.player.CANNOT_MOVE__EMPTY_TILE);
-			return;
-		}
+		if(!tile)
+			return Promise.reject(new Error('CANNOT_MOVE__EMPTY_TILE'));
 
-		if(tile.isWater()) {
-			this.think(language.player.CANNOT_MOVE__WATER);
-			return;
-		}
+		if(!this.tile.isNeighbourOf(tile))
+			return Promise.reject(new Error('CANNOT_MOVE__NOT_NEIGHBOUR'));
 
-		if(!this.canMoveBetweenTiles(this.tile, tile)) {
-			this.think(language.player.CANNOT_MOVE__TOO_STEEP);
-			return;
-		}
+		return this._walk([tile]);
+	};
+	Entity.prototype._move = function (tile) {
+		return new Promise(function (resolve, reject) {
+			var time = this.options.moveInterval || 1000;
 
-		// Save as new player location and pan world to it
-		this.tile = tile;
+			if(tile.isWater())
+				throw new Error('CANNOT_MOVE__WATER');
 
-		// @TODO: Move this to a callback/even
-		this.emit('move', this.tile);
+			if(!this.canMoveBetweenTiles(this.tile, tile))
+				throw new Error('CANNOT_MOVE__TOO_STEEP');
+
+			this.tile = tile;
+			this.moving = true;
+			this.emit('move', tile);
+
+			// @TODO: Move this to a callback/even
+			setTimeout(function () {
+				this.moving = false;
+				resolve();
+			}.bind(this), time);
+		}.bind(this));
 	};
 
 	Entity.prototype.canMoveBetweenTiles = function (a, b) {
@@ -86,22 +92,29 @@ define([
 	};
 
 	Entity.prototype.walk = function (path) {
-		if(!path || !path.length) {
-			this.think(language.player.CANNOT_WALK__NO_PATH);
+		if(!path || !path.length)
+			return Promise.reject(new Error('CANNOT_WALK__NO_PATH'));
+
+		return this._walk(path);
+
+	};
+	Entity.prototype._walk = function (path) {
+		if(path)
+			this.path = path;
+
+		if(!this.path || !this.path.length) {
+			console.log('finished _walk');
 			return;
 		}
 
-		this.move(path.pop());
-		var interval = setInterval(function () {
-			var tile = path.pop();
-			if(tile)
-				this.move(tile);
-			else
-				clearInterval(interval);
-		}.bind(this), this.options.moveInterval || 500);
+		var nextTile = this.path.shift();
 
-		// Remember
-		this.path = path;
+		if(!this.moving)
+			this._move(nextTile).then(this._walk.bind(this));
+	};
+
+	Entity.prototype.stop = function () {
+		this.path = [];
 	};
 	/**
 	 * Tell the provided renderer how to yield a visual representation of the player
@@ -117,14 +130,15 @@ define([
 			this.strokeColor,
 			this.fillColor
 		);
-
-		renderer.context.lineWidth = 3;
-		renderer.strokeSpatialPolygon(this.path.concat([this.tile]).map(function (tile) {
-				return [tile.x + 0.5, tile.y + 0.5, tile.z];
-			}),
-			new Color('yellow').setAlpha(0.7)
-		);
-		renderer.context.lineWidth = 1;
+		if(this.path && this.path.length >= 2) {
+			renderer.context.lineWidth = 3;
+			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
+					return [tile.x + 0.5, tile.y + 0.5, tile.z];
+				}),
+				new Color('yellow').setAlpha(0.7)
+			);
+			renderer.context.lineWidth = 1;
+		}
 	};
 
 	return Entity;

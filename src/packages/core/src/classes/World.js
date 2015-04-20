@@ -167,8 +167,8 @@ define([
 
 			++tile.regens;
 
-			if(!tile.canStillBeChanged())
-				tile.updateColorsForRegistry(this)
+			if(tile.regens >= tile.maxRegens)
+				tile.lock(this)
 		}.bind(this));
 	};
 

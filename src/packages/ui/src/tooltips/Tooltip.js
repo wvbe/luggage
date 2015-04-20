@@ -17,12 +17,22 @@ define([], function(
 		}
 	}
 
-	Tooltip.prototype.open = function () {
-
+	/**
+	 * Simply replace the prototype close() with the one provided by a TooltipSlot
+	 * @param close
+	 */
+	Tooltip.prototype.setCloseHandler = function(close) {
+		if(typeof close === 'function')
+			this.close = close;
+		else
+			this.close = Tooltip.prototype.close;
 	};
 
+	/**
+	 * Expects to be and/or overridden in an inheriting class, or be provided by the TooltipSlot via setCloseHandler()
+	 */
 	Tooltip.prototype.close = function () {
-
+		throw new Error('Not implemented');
 	};
 
 	Tooltip.prototype.getElement = function () {
@@ -34,6 +44,10 @@ define([], function(
 
 		this.classes.forEach(function (className) {
 			element.classList.add(className);
+		});
+
+		element.addEventListener('mousedown', function (evt) {
+			evt.stopPropagation();
 		});
 
 		return element;

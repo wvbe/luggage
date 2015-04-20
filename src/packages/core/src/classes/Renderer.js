@@ -295,10 +295,65 @@ define([
 		return this.finishLastShape(strokeColor, fillColor);
 	};
 
-	Renderer.prototype.strokeSpatialPolygon = function (coordinateSets, strokeColor, fillColor) {
+	Renderer.prototype.strokeSpatialLines = function (coordinateSets, strokeColor, fillColor) {
 		this.context.beginPath();
 		drawSpatialPolygon.call(this, coordinateSets);
 		return this.finishLastShape(strokeColor, fillColor);
+	};
+
+	Renderer.prototype.strokeSpatialBezier = function (coordinateSets, strokeColor, fillColor) {
+		this.context.beginPath();
+
+		coordinateSets = coordinateSets
+			.map(function (coords) {
+				return this.pixelForCoordinates(coords[0], coords[1], coords[2]);
+			}.bind(this));
+
+		// http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
+		this.context.moveTo(coordinateSets[0][0], coordinateSets[0][1]);
+		for (i = 1; i < coordinateSets.length - 2; i ++) {
+			var xc = (coordinateSets[i][0] + coordinateSets[i + 1][0]) / 2;
+			var yc = (coordinateSets[i][1] + coordinateSets[i + 1][1]) / 2;
+			this.context.quadraticCurveTo(coordinateSets[i][0], coordinateSets[i][1], xc, yc);
+		}
+		// curve through the last two coordinateSets
+		this.context.quadraticCurveTo(coordinateSets[i][0], coordinateSets[i][1], coordinateSets[i+1][0],coordinateSets[i+1][1]);
+
+		return this.finishLastShape(strokeColor, fillColor);
+	};
+	/**
+	 * Renders te outer contours of a box
+	 */
+	Renderer.prototype.strokeBoxHalo = function (x, y, z, width, length, height, strokeColor, fillColor, haloOffset) {
+		var minCoords = [x,y,z],
+			size = [width, length, height];
+		return this.fillSpatialPolygon([
+			[1,1,0],
+			[1,1,1],
+			[0,1,1],
+			[0,0,1],
+			[0,0,0],
+			[1,0,0]//,
+			// [1,1,0], // Dont need the last coordinates because the path is closed
+		].map(function (coordinateSet) {
+			return coordinateSet.map(function (coord, i) {
+				return minCoords[i] + coord * size[i] + (coord ? 1 : -1) * haloOffset;
+			});
+		}), strokeColor, fillColor);
+	};
+
+	Renderer.prototype.fillTileHalo = function (tile, strokeColor, fillColor, haloOffset) {
+		return this.strokeBoxHalo(
+			tile.x,
+			tile.y,
+			0.5,
+			1,
+			1,
+			tile.z + 0.5,
+			strokeColor || tile.strokeColor,
+			fillColor,
+			haloOffset
+		);
 	};
 
 	 function drawSpatialPolygon (coordinateSets, strokeColor, fillColor) {
@@ -311,6 +366,7 @@ define([
 			}.bind(this));
 
 	};
+
 
 	/**
 	 * Render a rectangle as if it were flat on the ground
