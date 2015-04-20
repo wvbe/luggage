@@ -28,6 +28,9 @@ define([
 			var keyCode = event.keyCode,
 				listener = this.listeners[keyCode];
 
+			if(this.pressed[keyCode])
+				return;
+
 			this.pressed[keyCode] = true;
 
 			if(!listener)
@@ -54,6 +57,16 @@ define([
 		}.bind(this));
 
 		return this;
+	};
+
+	InputService.prototype.retry = function (keyCode) {
+		var listener = this.listeners[keyCode];
+
+		if(!listener || !this.pressed[keyCode])
+			return;
+
+		listener._handler();
+
 	};
 
 	/**

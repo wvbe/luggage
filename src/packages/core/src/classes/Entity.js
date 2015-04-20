@@ -54,7 +54,7 @@ define([
 			var time = this.options.moveInterval || 1000;
 
 			if(tile.isWater())
-				throw new Error('CANNOT_MOVE__WATER');
+				return reject(new Error('CANNOT_MOVE__WATER'));
 
 			if(!this.canMoveBetweenTiles(this.tile, tile))
 				throw new Error('CANNOT_MOVE__TOO_STEEP');
@@ -93,7 +93,12 @@ define([
 
 	Entity.prototype.walk = function (path) {
 		if(!path || !path.length)
-			return Promise.reject(new Error('CANNOT_WALK__NO_PATH'));
+			return Promise.reject(new Error('CANNOT_WALK__NO_PATH')).catch(function (err) {
+				this.emit('walk:error', err);
+				this.stop();
+			}.bind(this));
+
+		this.emit('walk:start');
 
 		return this._walk(path);
 
@@ -103,14 +108,17 @@ define([
 			this.path = path;
 
 		if(!this.path || !this.path.length) {
-			console.log('finished _walk');
+			this.emit('walk:end');
 			return;
 		}
 
 		var nextTile = this.path.shift();
 
 		if(!this.moving)
-			this._move(nextTile).then(this._walk.bind(this));
+			this._move(nextTile).then(this._walk.bind(this)).catch(function (err) {
+				this.emit('walk:error', err);
+				this.stop();
+			}.bind(this));
 	};
 
 	Entity.prototype.stop = function () {

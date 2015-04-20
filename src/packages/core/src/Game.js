@@ -36,7 +36,7 @@ define([
 
 		// Configuration for the key listener for player movement, arrows (InputService)
 		ARROW_KEY_CONFIG = {
-			intervalTime: PLAYER_MOVE_INTERVAL
+			//intervalTime: PLAYER_MOVE_INTERVAL
 		},
 
 		// Options for short player thought tooltips
@@ -129,6 +129,8 @@ define([
 
 		// When player moves...
 		this.player.on('move', function (tile) {
+			this.expressions.close();
+
 			// Manage the surrounding terrain, progressing each tile between 9% and 14% towards completion
 			this.iterateTerrain(tile);
 
@@ -144,6 +146,11 @@ define([
 			);
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 		}.bind(this));
+
+		this.player.on('walk:error', function (err) {
+			this.playerTooltip(err.message);
+		}.bind(this));
+
 
 		// Start listening for keyboard input
 		this.setInputListeners();
@@ -269,15 +276,30 @@ define([
 		this.input
 			.configureKey(37, ARROW_KEY_CONFIG, function () { // left
 				this.player.move(this.player.getTileRelativeToPosition(this.world, -1, 0));
+
+				this.player.once('walk:end', function () {
+					this.input.retry(37);
+				}.bind(this));
 			}.bind(this))
 			.configureKey(38, ARROW_KEY_CONFIG, function () { // up
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, 1));
+
+				this.player.once('walk:end', function () {
+					this.input.retry(38);
+				}.bind(this));
 			}.bind(this))
 			.configureKey(39, ARROW_KEY_CONFIG, function () { // right
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 1, 0));
+
+				this.player.once('walk:end', function () {
+					this.input.retry(39);
+				}.bind(this));
 			}.bind(this))
 			.configureKey(40, ARROW_KEY_CONFIG, function () { // down
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, -1));
+				this.player.once('walk:end', function () {
+					this.input.retry(40);
+				}.bind(this));
 			}.bind(this))
 			.listen();
 

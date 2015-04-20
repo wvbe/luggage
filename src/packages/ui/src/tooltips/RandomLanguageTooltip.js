@@ -16,6 +16,8 @@ define([
 				: content,
 			options
 		);
+
+		this.classes.push('language');
 	}
 
 	RandomLanguageTooltip.prototype = Object.create(Tooltip.prototype);

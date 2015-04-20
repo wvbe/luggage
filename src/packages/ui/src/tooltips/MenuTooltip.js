@@ -13,6 +13,8 @@ define([
 			content,
 			options
 		);
+
+		this.classes.push('menu');
 	}
 
 	MenuTooltip.prototype = Object.create(Tooltip.prototype);
@@ -22,7 +24,9 @@ define([
 		var element = Tooltip.prototype.createElement.apply(this, arguments);
 
 		this.content.forEach(function (menuItem) {
-			element.appendChild(menuItem.createElement());
+			var itemElement = menuItem.createElement();
+			itemElement.classList.add('tooltip__item');
+			element.appendChild(itemElement);
 		});
 
 		return element;
