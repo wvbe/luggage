@@ -1,10 +1,7 @@
 define([
 	'Color',
-	'tiny-emitter',
-	'language',
-
 	'./Entity'
-], function(Color, EventEmitter, language, Entity) {
+], function(Color, Entity) {
 
 	/**
 	 * The character our gamer has control over. While the animations may be missing, the player can move through the
@@ -12,7 +9,7 @@ define([
 	 * @param tile
 	 * @constructor
 	 */
-	function Player(tile, options) {
+	function PlayerEntity(tile, options) {
 		Entity.call(this, tile, options);
 
 		// Some presentation stuffs
@@ -20,8 +17,8 @@ define([
 		this.strokeColor = new Color([50,50,50]);
 	}
 
-	Player.prototype = Object.create(Entity.prototype);
-	Player.prototype.constructor = Player;
+	PlayerEntity.prototype = Object.create(Entity.prototype);
+	PlayerEntity.prototype.constructor = PlayerEntity;
 
-	return Entity;
+	return PlayerEntity;
 });

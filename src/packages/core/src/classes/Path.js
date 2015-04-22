@@ -19,7 +19,7 @@ define([
 
 
 
-	function Path (world, entity, start, end, validator) {
+	function Path (world, start, end, validator) {
 
 		function resolvePathByParents(world, node){
 			var curr = node,
@@ -53,7 +53,7 @@ define([
 		}
 
 
-		var heuristic = heuristics.diagonal,
+		var heuristic = heuristics.manhattan,
 			closest = false,
 			_tileData = {},
 			closestTileData = tileData(start),
@@ -87,7 +87,7 @@ define([
 			neighbours.forEach(function (neighbour) {
 				var neighbourData = tileData(neighbour);
 
-				if(neighbourData.closed || neighbour.isWater() || !entity.canMoveBetweenTiles(currentTile, neighbour))
+				if(neighbourData.closed || !validator(currentTile, neighbour))
 					return;
 
 				// The g score is the shortest distance from start to current node.

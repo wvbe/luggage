@@ -2,12 +2,14 @@ define([
 	'Color',
 	'util',
 
-	'./ArtifactHouse'
+	'./ArtifactHouse',
+	'./MenuItem'
 ], function(
 	Color,
 	util,
 
-	ArtifactHouse
+	ArtifactHouse,
+	MenuItem
 	) {
 
 	// Must be known in order to produce a valid color range for all possible tiles
@@ -56,7 +58,11 @@ define([
 		this.regens = 0;
 		this.maxRegens = MAX_TILE_REGENS + util.randomDeviation(2);
 
-//		this.corners = [];
+		this.menuItems = [
+			new MenuItem('Inspect', function () {
+				console.log('Inspecting tile', this);
+			}.bind(this))
+		];
 
 		this.fillColor = COLOR_UNDETERMINED_FILL;
 
@@ -114,19 +120,13 @@ define([
 	};
 
 	Tile.prototype.getMenuItems = function () {
-		return this.artifacts.reduce(function (items, artifact) {
+		return this.menuItems.concat(this.artifacts.reduce(function (items, artifact) {
 			return items.concat(artifact.getMenuItems());
-		}, []);
+		}, []));
 	};
 
 	Tile.prototype.getSurfaceCoordinates = function () {
 		return [this.x, this.y, this.z];
-	};
-
-	Tile.prototype.triggerArtifactMenu = function () {
-		var menuItems = this.getMenuItems();
-
-		console.log('Opening', menuItems);
 	};
 
 	Tile.prototype.lock = function (registry) {
@@ -139,65 +139,42 @@ define([
 
 		var tileRelativeHeight = (this.z > MAX_TILE_Z ? MAX_TILE_Z : this.z) / MAX_TILE_Z;
 		var baseColor = new Color({
-			hue: 82,
-			saturation: 0.5,
-			lightness: 0.2 + 0.4 * Math.pow(tileRelativeHeight, 1.5)
-		});
+			hue: 82,// + util.randomDeviation(1),
+			saturation: 0.5,// + util.randomDeviation(0.03),
+			lightness: 0.2 + 0.4 * Math.pow(tileRelativeHeight, 1.5) + util.randomDeviation(0.01)
+		}).lightenByRatio(0.3);
 
 		if(this.isWater()) {
 			// Keep the default color
 
 		} else if (this.z <= Z_BEACH_LEVEL) {
+			var beachNess = 1 - this.z / Z_BEACH_LEVEL;
 			// Tile color is a blend between regular and sandy tile color
 			this.fillColor = baseColor.blend(new Color({ // beach color
-					hue: 30 + util.randomDeviation(4),
-					saturation: 0.49 + util.randomDeviation(0.03),
-					lightness: 0.60 + util.randomDeviation(0.05)
-				}), 0.8);
+					hue: 30,
+					saturation: 0.49,
+					lightness: 0.70
+				}), beachNess).lightenByRatio(0.2);
 
 		} else if (this.z <= Z_GRASS_LEVEL) {
 			// Tile color is just the base color
 			this.fillColor = baseColor;
-		}
-
-		// If tile is above a certain level, gradually desaturate and lighten it, making it look like
-		// arid rocks and eventually snow.
-		if (this.z > Z_GRASS_LEVEL) {
+		} else {
+			// If tile is above a certain level, gradually desaturate and lighten it, making it look like
+			// arid rocks and eventually snow.
 			var levelOfBarrenness = (this.z - Z_GRASS_LEVEL)/(Z_BARREN_LEVEL-Z_GRASS_LEVEL);
-			if(levelOfBarrenness < 0)
-				debugger;
+
 			this.fillColor = baseColor
 				.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
 				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
-		} else{
-			this.fillColor = this.fillColor.lightenByRatio(0.3);
 		}
 
-//		this.corners = [
-//			[-1, -1],
-//			[1, -1],
-//			[1, 1],
-//			[-1, 1],
-//		].map(function (relativeCoordinates) {
-//			return [
-//				this,
-//				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y + relativeCoordinates[1])),
-//				registry.get(this.getIdForCoordinates(this.x + relativeCoordinates[0], this.y)),
-//				registry.get(this.getIdForCoordinates(this.x, this.y + relativeCoordinates[1]))
-//			].reduce(function (totalZ, tile) {
-//				if(!(tile && tile instanceof Tile))
-//					totalZ = totalZ + this.z;
-//				else
-//					totalZ = totalZ + tile.z;
-//				return totalZ;
-//			}, 0)/4;
-//		}.bind(this));
+		if(this.isWater())
+			return;
 
-		if(!this.isWater())
-			this.strokeColor = this.fillColor.darkenByRatio(0.3);
+		this.strokeColor = this.fillColor.darkenByRatio(0.3);
 
-
-		if(!this.isWater() && this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL && Math.random() < 0.1)
+		if(this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL && Math.random() < 0.1)
 			this.addArtifact(new ArtifactHouse(this));
 	};
 
@@ -227,7 +204,7 @@ define([
 				renderer.fillBox(
 					this.x,
 					this.y,
-					0 + ACTUAL_WATERLINE_Z,
+					ACTUAL_WATERLINE_Z,
 					1,
 					1,
 					this.z + ACTUAL_WATERLINE_Z,

@@ -19,6 +19,7 @@ define([
 			primaryKey: 'id'
 		});
 
+		this.entities = [];
 	}
 
 
@@ -37,36 +38,6 @@ define([
 		if(Array.isArray(id))
 			id = id.join(',');
 		return ObjectStore.prototype.delete.call(this, id);
-	};
-
-
-	// @TODO: The delta X & Y's (and their render order) can be cached for every distance.
-	World.prototype.getAreaAroundPosition = function (center, maximumDistance, minimumDistance, includeEmptyPositions, useManhattanDistance) {
-		var list = [],
-			store = this;
-
-		minimumDistance = minimumDistance || 0; // Inclusive, and so is maximumDistance
-
-		// Get only tiles within manhattan distance
-		for(var y = center.y - maximumDistance; y <= center.y + maximumDistance; ++y) {
-			for(var x = center.x - maximumDistance; x <= center.x + maximumDistance; ++x) {
-				//
-
-				var tileDistance = useManhattanDistance
-					? Math.abs(x - center.x) + Math.abs(y - center.y)
-					: Math.floor(util.pythagoras(x - center.x, y - center.y));
-
-				if (tileDistance > maximumDistance || tileDistance < minimumDistance)
-					continue;
-
-				var tile = store.get([x, y]);
-				if (tile)
-					list.push(tile);
-				else if (includeEmptyPositions)
-					list.push([x, y]);
-			}
-		}
-		return list;
 	};
 
 	World.prototype.tileForCoordinates = function (coordinates) {
@@ -118,6 +89,12 @@ define([
 		return lists;
 	};
 
+	World.prototype.getRandomTile = function () {
+		return util.randomFromArray(this.list().filter(function (tile) {
+			return !tile.canStillBeChanged() && !tile.isWater();
+		}));
+	};
+
 	World.prototype.generateTilesOnPositions = function (tileIds, randomizeTileOrder) {
 		tileIds = randomizeTileOrder ? util.shuffle(tileIds) : tileIds;
 		return tileIds.map(function (tileId) {
@@ -143,8 +120,9 @@ define([
 	};
 
 	World.prototype.getPotentialTilesAroundPosition = function (center, distance, minimumDistance) {
-		return this.getAreaAroundPosition(center, distance, minimumDistance, true, false).filter(function (tileOrTileId) {
-			return typeof tileOrTileId === 'string';
+		var ranges = minimumDistance ? [distance, minimumDistance] : [distance];
+		return this.getTilesWithinRanges(center, ranges, true, !minimumDistance, false).filter(function (tileOrTileId) {
+			return Array.isArray(tileOrTileId);
 		});
 	};
 
@@ -188,7 +166,6 @@ define([
 		return this.get([0,0]) || this.generateNewTile([0,0]);
 	};
 
-
 	/**
 	 *
 	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
@@ -199,6 +176,10 @@ define([
 			.forEach(function (tile) {
 				tile.render(renderer);
 			});
+
+		this.entities.forEach(function (entity) {
+			entity.render(renderer);
+		})
 	};
 
 

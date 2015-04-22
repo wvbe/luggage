@@ -26,8 +26,11 @@ define([
 		this.content.forEach(function (menuItem) {
 			var itemElement = menuItem.createElement();
 			itemElement.classList.add('tooltip__item');
+			itemElement.addEventListener('mousedown', function () {
+				this.close();
+			}.bind(this));
 			element.appendChild(itemElement);
-		});
+		}.bind(this));
 
 		return element;
 	};

@@ -72,7 +72,7 @@ define([
 	};
 
 	Entity.prototype.canMoveBetweenTiles = function (a, b) {
-		return !(Math.abs(b.z - a.z) > 2);
+		return !(Math.abs(b.z - a.z) > 2) && !b.isWater();
 	};
 
 	/**
@@ -88,27 +88,36 @@ define([
 		if(!end)
 			return [];
 
-		return new Path(world, this, this.tile, end);
+		return new Path(world, this.tile, end, this.canMoveBetweenTiles.bind(this));
+	};
+
+	Entity.prototype.walkToTile = function (world, tile) {
+		return this.walk(this.findPathToTile(world, tile));
 	};
 
 	Entity.prototype.walk = function (path) {
 		if(!path || !path.length)
 			return Promise.reject(new Error('CANNOT_WALK__NO_PATH')).catch(function (err) {
-				this.emit('walk:error', err);
+				this.emit('move:error', err);
 				this.stop();
 			}.bind(this));
+
+		if(this.moving) {
+			this.path = path;
+			return;
+		}
 
 		this.emit('walk:start');
 
 		return this._walk(path);
-
 	};
+
 	Entity.prototype._walk = function (path) {
 		if(path)
 			this.path = path;
 
 		if(!this.path || !this.path.length) {
-			this.emit('walk:end');
+			this.emit('move:finish');
 			return;
 		}
 
@@ -116,7 +125,7 @@ define([
 
 		if(!this.moving)
 			this._move(nextTile).then(this._walk.bind(this)).catch(function (err) {
-				this.emit('walk:error', err);
+				this.emit('move:error', err);
 				this.stop();
 			}.bind(this));
 	};
@@ -128,7 +137,7 @@ define([
 	 * Tell the provided renderer how to yield a visual representation of the player
 	 * @param {Renderer} renderer
 	 */
-	Entity.prototype.renderEntity = function (renderer) {
+	Entity.prototype.render = function (renderer) {
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(
 			this.tile.x + 0.5, // Positioned on the middle...

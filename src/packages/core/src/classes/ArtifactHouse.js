@@ -12,9 +12,9 @@ define([
 		Artifact.call(this);
 
 		this.size = [
-			0.05 + Math.random() * 0.2,
-			0.05 + Math.random() * 0.2,
-			0.2 + Math.random() * 0.3
+			0.15 + Math.random() * 0.4,
+			0.15 + Math.random() * 0.4,
+			0.2 + Math.random() * 0.8
 		];
 
 		this.offset = [

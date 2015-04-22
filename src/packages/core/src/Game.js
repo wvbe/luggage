@@ -7,7 +7,8 @@ define([
 	'./classes/World',
 	'./classes/Tile',
 	'./classes/Renderer',
-	'./classes/Player'
+	'./classes/PlayerEntity',
+	'./classes/NpcEntity'
 ], function (
 	ui,
 	Color,
@@ -17,7 +18,8 @@ define([
 	World,
 	Tile,
 	Renderer,
-	Player
+	PlayerEntity,
+	NpcEntity
 ) {
 	var
 		// Speed of the parallax backdrop, relative to player movement
@@ -96,13 +98,13 @@ define([
 
 
 		// The player
-		this.player = new Player(this.world.getSpawnTile(), {
+		this.player = new PlayerEntity(this.world.getSpawnTile(), {
 			moveInterval: PLAYER_MOVE_INTERVAL
 		});
 		
 		// The canvas to render the player to
 		this.cursor = new Renderer(document.getElementById('player'))
-			.onRender(this.player.renderEntity.bind(this.player));
+			.onRender(this.player.render.bind(this.player));
 
 
 		// Parallax scrolling to 
@@ -117,7 +119,7 @@ define([
 	 * @private
 	 */
 	Game.prototype._init = function () {
-		// Player thoughts make tooltips
+		// PlayerEntity thoughts make tooltips
 		this.player.on('thought', this.playerTooltip.bind(this));
 
 
@@ -129,6 +131,7 @@ define([
 
 		// When player moves...
 		this.player.on('move', function (tile) {
+			// Close any expressions
 			this.expressions.close();
 
 			// Manage the surrounding terrain, progressing each tile between 9% and 14% towards completion
@@ -147,16 +150,21 @@ define([
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 		}.bind(this));
 
-		this.player.on('walk:error', function (err) {
+		this.player.on('move:error', function (err) {
 			this.playerTooltip(err.message);
 		}.bind(this));
 
+		//for(var ii = 0, j = 10; ii < j; ++ii) {
+		//	var entity = new NpcEntity(this.world.getRandomTile());
+		//	this.world.entities.push(entity);
+		//	entity.start(this.world);
+		//}
 
 		// Start listening for keyboard input
 		this.setInputListeners();
 
 		// Reset viewport
-		this.focusOnTile(this.getPlayerLocation());
+		this.focusOnTile(this.getPlayerEntityLocation());
 
 		// Set up mouse tracking (hover and clicks)
 
@@ -233,7 +241,7 @@ define([
 
 		this.renderer.setTileSize(Math.abs(amount));
 
-		this.focusOnTile(tile || this.getPlayerLocation());
+		this.focusOnTile(tile || this.getPlayerEntityLocation());
 	};
 
 	/**
@@ -264,7 +272,7 @@ define([
 	/**
 	 * @returns {Tile}
 	 */
-	Game.prototype.getPlayerLocation = function () {
+	Game.prototype.getPlayerEntityLocation = function () {
 		return this.player.tile;
 	};
 
@@ -276,28 +284,27 @@ define([
 		this.input
 			.configureKey(37, ARROW_KEY_CONFIG, function () { // left
 				this.player.move(this.player.getTileRelativeToPosition(this.world, -1, 0));
-
-				this.player.once('walk:end', function () {
+				this.player.once('move:finish', function () {
 					this.input.retry(37);
 				}.bind(this));
 			}.bind(this))
 			.configureKey(38, ARROW_KEY_CONFIG, function () { // up
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, 1));
 
-				this.player.once('walk:end', function () {
+				this.player.once('move:finish', function () {
 					this.input.retry(38);
 				}.bind(this));
 			}.bind(this))
 			.configureKey(39, ARROW_KEY_CONFIG, function () { // right
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 1, 0));
 
-				this.player.once('walk:end', function () {
+				this.player.once('move:finish', function () {
 					this.input.retry(39);
 				}.bind(this));
 			}.bind(this))
 			.configureKey(40, ARROW_KEY_CONFIG, function () { // down
 				this.player.move(this.player.getTileRelativeToPosition(this.world, 0, -1));
-				this.player.once('walk:end', function () {
+				this.player.once('move:finish', function () {
 					this.input.retry(40);
 				}.bind(this));
 			}.bind(this))
