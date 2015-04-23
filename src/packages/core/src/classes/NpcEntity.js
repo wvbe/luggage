@@ -11,12 +11,14 @@ define([
 	 * @param tile
 	 * @constructor
 	 */
-	function NpcEntity(tile, options) {
+	function NpcEntity(tile, options, properties) {
 		Entity.call(this, tile, options);
 
 		this.options = {
 			moveInterval: 1000
 		};
+
+		this.properties = properties;
 
 		this.active = false;
 
@@ -43,7 +45,6 @@ define([
 	NpcEntity.prototype.makeRandomMove = function (world) {
 		var withinRange = world.getTilesWithinRanges(this.tile, [7, 3])[0],
 			randomWithinRange = util.randomFromArray(withinRange);
-		console.log('DESTINATION', withinRange, randomWithinRange);
 		return this.walkToTile(world, randomWithinRange);
 	};
 
@@ -57,6 +58,10 @@ define([
 				this.keepMakingRandomMoves(world);
 			}.bind(this))
 		}.bind(this), 10 * 1000 * Math.random());
+	};
+
+	NpcEntity.prototype.getProperty = function (propertyName) {
+		return this.properties[propertyName];
 	};
 
 	return NpcEntity;

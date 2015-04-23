@@ -1,19 +1,23 @@
 define([
 	'util',
+	'language',
+
 	'./Tooltip'
 ], function(
 	util,
+	language,
+
 	Tooltip
 ) {
 
 
 	function RandomLanguageTooltip(coordinates, content, options) {
+
+
 		Tooltip.call(
 			this,
 			coordinates,
-			Array.isArray(content)
-				? util.randomFromArray(content)
-				: content,
+			language.player.get(content) || content,
 			options
 		);
 

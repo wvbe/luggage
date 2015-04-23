@@ -1,5 +1,7 @@
 define([
 	'ui',
+	'language',
+
 	'Color',
 
 	'./InputService',
@@ -11,6 +13,8 @@ define([
 	'./classes/NpcEntity'
 ], function (
 	ui,
+	language,
+
 	Color,
 
 	InputService,
@@ -154,11 +158,9 @@ define([
 			this.playerTooltip(err.message);
 		}.bind(this));
 
-		//for(var ii = 0, j = 10; ii < j; ++ii) {
-		//	var entity = new NpcEntity(this.world.getRandomTile());
-		//	this.world.entities.push(entity);
-		//	entity.start(this.world);
-		//}
+		for(var ii = 0, j = 10; ii < j; ++ii) {
+			this.generateRandomNpcEntity();
+		}
 
 		// Start listening for keyboard input
 		this.setInputListeners();
@@ -343,6 +345,18 @@ define([
 		return [clickOffsetX, clickOffsetY];
 	}
 
+	Game.prototype.generateRandomNpcEntity = function () {
+		var entityGender = Math.random < 0.5 ? 'male' : 'female',
+			entityName = language.names.get('FIRST_NAME_LATIN') + ' ' + language.names.get('LAST_NAME_LATIN');
+
+		var entity = new NpcEntity(this.world.getRandomTile(), null, {
+			name: entityName,
+			gender: entityGender
+		});
+		this.world.entities.push(entity);
+		entity.start(this.world);
+	};
+
 	/**
 	 * Makes alterations to the terrain, centering on a given tile
 	 * @param {Tile} center
@@ -381,6 +395,15 @@ define([
 
 		// Relax tiles that are new or unfinished.
 		this.world.relaxTiles(regeneratableTiles.concat(newTiles), 0.03, true);
+	};
+
+	Game.prototype.iterateEntities = function (center) {
+		var entities = this.world.entities;
+
+		entities.forEach(function (entity) {
+			console.log(entity.tile);
+		});
+
 	};
 
 	return Game;

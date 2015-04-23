@@ -72,6 +72,9 @@ define([
 			var currentTileData = _openTiles.pop(),
 				currentTile = dataTile(currentTileData);
 
+			if(!currentTile)
+				continue;
+
 			// End case -- result has been found, return the traced path.
 			if(currentTile === end) {
 				var path = resolvePathByParents(world, end);
