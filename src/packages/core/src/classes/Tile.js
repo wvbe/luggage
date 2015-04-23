@@ -41,7 +41,7 @@ define([
 		}),
 
 		COLOR_HOVERED_FILL = new Color('yellow'),
-		RENDER_MODE_BOX = 'cube';
+		RENDER_MODE_BOX = 'halo';
 
 	function getIdForCoordinates (x, y) {
 		return x + ',' + y;

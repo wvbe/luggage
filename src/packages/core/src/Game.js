@@ -1,5 +1,6 @@
 define([
-	'ui',
+	'ui',	
+	'util',
 	'language',
 
 	'Color',
@@ -10,9 +11,11 @@ define([
 	'./classes/Tile',
 	'./classes/Renderer',
 	'./classes/PlayerEntity',
-	'./classes/NpcEntity'
+	'./classes/NpcEntity',
+	'./classes/Minimap'
 ], function (
 	ui,
+	util,
 	language,
 
 	Color,
@@ -23,7 +26,8 @@ define([
 	Tile,
 	Renderer,
 	PlayerEntity,
-	NpcEntity
+	NpcEntity,
+	Minimap
 ) {
 	var
 		// Speed of the parallax backdrop, relative to player movement
@@ -114,6 +118,8 @@ define([
 		// Parallax scrolling to 
 		this.backdrop = document.getElementById('backdrop');
 
+		this.minimap = new Minimap(document.getElementById('minimap'), this.world, this.player);
+
 		this._init();
 	}
 
@@ -133,6 +139,8 @@ define([
 		for(var i = 0, center = this.player.tile; i < INITIAL_TERRAIN_ITERATIONS; ++i)
 			this.iterateTerrain(center);
 
+		var minimapRenderer = util.debounce(this.minimap.render.bind(this.minimap), 500);
+
 		// When player moves...
 		this.player.on('move', function (tile) {
 			// Close any expressions
@@ -143,6 +151,8 @@ define([
 
 			// Look at the new player location
 			this.focusOnTile(tile);
+
+			minimapRenderer();
 
 			// Update the parallax
 			var bgPos = this.renderer.pixelForCoordinates(
@@ -224,6 +234,8 @@ define([
 			this.expressions.open(new ui.MenuTooltip(tile.getSurfaceCoordinates(), tile.getMenuItems(), MENU_TOOLTIP_OPTIONS));
 			this.worldTooltipRenderer.render();
 		}.bind(this));
+
+		this.minimap.render();
 
 	};
 	/**

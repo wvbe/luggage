@@ -121,9 +121,10 @@ define([
 
 	World.prototype.getPotentialTilesAroundPosition = function (center, distance, minimumDistance) {
 		var ranges = minimumDistance ? [distance, minimumDistance] : [distance];
-		return this.getTilesWithinRanges(center, ranges, true, !minimumDistance, false).filter(function (tileOrTileId) {
-			return Array.isArray(tileOrTileId);
-		});
+		return this.getTilesWithinRanges(center, ranges, true, !minimumDistance, false)[0]
+			.filter(function(tileOrTileId) {
+				return Array.isArray(tileOrTileId);
+			});
 	};
 
 	World.prototype.relaxTiles = function (tiles, amount, ignoreEmptyPositions) {

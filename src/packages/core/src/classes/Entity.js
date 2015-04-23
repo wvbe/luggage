@@ -21,6 +21,9 @@ define([
 		this.tile = tile;
 		this.path = [];
 
+		this.health = 100;
+		this.armor = 100;
+
 		// Some presentation stuffs
 		this.fillColor = new Color([255, 255, 255]);
 		this.strokeColor = new Color([50,50,50]);
@@ -37,7 +40,6 @@ define([
 	};
 
 	/**
-	 * @todo Must be refactored to eat a tile instead of world, x and y
 	 * @param {Tile} tile
 	 */
 	Entity.prototype.move = function (tile) {
@@ -49,6 +51,7 @@ define([
 
 		return this._walk([tile]);
 	};
+
 	Entity.prototype._move = function (tile) {
 		return new Promise(function (resolve, reject) {
 			var time = this.options.moveInterval || 1000;
@@ -91,16 +94,18 @@ define([
 		return new Path(world, this.tile, end, this.canMoveBetweenTiles.bind(this));
 	};
 
-	Entity.prototype.walkToTile = function (world, tile) {
-		return this.walk(this.findPathToTile(world, tile));
+	Entity.prototype.walkToTile = function (world, tile, whenDone) {
+		return this.walk(this.findPathToTile(world, tile), whenDone);
 	};
 
-	Entity.prototype.walk = function (path) {
+	Entity.prototype.walk = function (path, whenDone) {
 		if(!path || !path.length)
 			return Promise.reject(new Error('CANNOT_WALK__NO_PATH')).catch(function (err) {
 				this.emit('move:error', err);
 				this.stop();
 			}.bind(this));
+
+		this._whenWalkDone = typeof whenDone === 'function' ? whenDone : null;
 
 		if(this.moving) {
 			this.path = path;
@@ -109,7 +114,7 @@ define([
 
 		this.emit('walk:start');
 
-		return this._walk(path);
+		return this._walk(path, whenDone);
 	};
 
 	Entity.prototype._walk = function (path) {
@@ -118,6 +123,8 @@ define([
 
 		if(!this.path || !this.path.length) {
 			this.emit('move:finish');
+			if(typeof this._whenWalkDone === 'function')
+				this._whenWalkDone();
 			return;
 		}
 
@@ -147,15 +154,6 @@ define([
 			this.strokeColor,
 			this.fillColor
 		);
-		if(this.path && this.path.length >= 2) {
-			renderer.context.lineWidth = 3;
-			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
-					return [tile.x + 0.5, tile.y + 0.5, tile.z];
-				}),
-				new Color('yellow').setAlpha(0.7)
-			);
-			renderer.context.lineWidth = 1;
-		}
 	};
 
 	return Entity;

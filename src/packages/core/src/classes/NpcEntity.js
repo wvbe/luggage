@@ -15,7 +15,7 @@ define([
 		Entity.call(this, tile, options);
 
 		this.options = {
-			moveInterval: 1000
+			moveInterval: 100
 		};
 
 		this.properties = properties;
@@ -23,26 +23,21 @@ define([
 		this.active = false;
 
 		// Some presentation stuffs
-		this.fillColor = new Color([255, 50, 50]);
-		this.strokeColor = new Color([200,30,30]);
+		this.fillColor = new Color([0,0,0]);
+		this.strokeColor = new Color([255,255,255]);
 	}
 
 	NpcEntity.prototype = Object.create(Entity.prototype);
 	NpcEntity.prototype.constructor = NpcEntity;
 
-	NpcEntity.prototype.start = function (world) {
+	NpcEntity.prototype.startRandomMoving = function (world) {
 		this.active = true;
 
 		this.keepMakingRandomMoves(world);
 	};
 
-	NpcEntity.prototype.stop = function () {
-		Entity.prototype.stop.apply(this, arguments);
-
-		this.active = false;
-	};
-
 	NpcEntity.prototype.makeRandomMove = function (world) {
+		console.log('Entity making a random move', this.tile);
 		var withinRange = world.getTilesWithinRanges(this.tile, [7, 3])[0],
 			randomWithinRange = util.randomFromArray(withinRange);
 		return this.walkToTile(world, randomWithinRange);

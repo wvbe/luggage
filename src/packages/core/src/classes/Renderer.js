@@ -41,7 +41,6 @@ define([
 
 		this.resize();
 
-
 		window.addEventListener('resize', this.resize.bind(this));
 	}
 
@@ -61,7 +60,7 @@ define([
 	 */
 	Renderer.prototype.render = function () {
 		if(!(typeof this._render === 'function'))
-			return;
+			return this;
 
 		this._render(this);
 
@@ -86,8 +85,7 @@ define([
 //		this.context.shadowColor = 'rgb(20, 41, 20)';
 //		this.context.shadowOffsetY = 6;
 
-		if(typeof this.render === 'function')
-			this.render();
+		this.render();
 
 		return this;
 	};
