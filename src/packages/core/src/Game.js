@@ -365,8 +365,14 @@ define([
 			name: entityName,
 			gender: entityGender
 		});
+
+		entity.on('move', function () {
+			this.renderer.clear();
+			this.renderer.render();
+		}.bind(this));
 		this.world.entities.push(entity);
-		entity.start(this.world);
+
+		entity.startRandomMoving(this.world);
 	};
 
 	/**
