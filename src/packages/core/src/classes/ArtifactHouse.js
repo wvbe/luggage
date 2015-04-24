@@ -32,7 +32,7 @@ define([
 	ArtifactHouse.prototype = Object.create(Artifact.prototype);
 	ArtifactHouse.prototype.constructor = ArtifactHouse;
 
-	ArtifactHouse.prototype.getMenuItems = function (renderer, tile) {
+	ArtifactHouse.prototype.getMenuItems = function () {
 		return this.menuItems;
 	};
 

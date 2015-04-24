@@ -148,6 +148,7 @@ define([
 
 			// Manage the surrounding terrain, progressing each tile between 9% and 14% towards completion
 			this.iterateTerrain(tile);
+			this.iterateEntities(tile);
 
 			// Look at the new player location
 			this.focusOnTile(tile);
@@ -168,9 +169,10 @@ define([
 			this.playerTooltip(err.message);
 		}.bind(this));
 
-		for(var ii = 0, j = 10; ii < j; ++ii) {
-			this.generateRandomNpcEntity();
-		}
+
+		this.generateRandomNpcEntities(10, this.world.list().filter(function (tile) {
+			return tile.isWalkable();
+		}));
 
 		// Start listening for keyboard input
 		this.setInputListeners();
@@ -357,11 +359,17 @@ define([
 		return [clickOffsetX, clickOffsetY];
 	}
 
-	Game.prototype.generateRandomNpcEntity = function () {
+	Game.prototype.generateRandomNpcEntities = function (amount, tiles) {
+		for(var i = 0; i < amount; ++i) {
+			this.generateRandomNpcEntity(tiles);
+		}
+	};
+
+	Game.prototype.generateRandomNpcEntity = function (tiles) {
 		var entityGender = Math.random < 0.5 ? 'male' : 'female',
 			entityName = language.names.get('FIRST_NAME_LATIN') + ' ' + language.names.get('LAST_NAME_LATIN');
 
-		var entity = new NpcEntity(this.world.getRandomTile(), null, {
+		var entity = new NpcEntity(util.randomFromArray(tiles), null, {
 			name: entityName,
 			gender: entityGender
 		});
@@ -383,7 +391,7 @@ define([
 		var registry = this.world,
 
 			// An array of arrays of tiles that fit in between given radiuses
-			tileRanges = this.world.getTilesWithinRanges(center, [
+			tileRanges = registry.getTilesWithinRanges(center, [
 				FOG_OF_WAR_DISTANCE + 1,
 				FOG_OF_WAR_DISTANCE
 			], true, true),
@@ -393,7 +401,7 @@ define([
 			withinRangeTiles = tileRanges[1],
 
 			// The tiles that were generated on unfilled coordinates
-			newTiles = this.world.generateTilesOnPositions(
+			newTiles = registry.generateTilesOnPositions(
 				withinRangeTiles.filter(function (tile) {
 					return !(tile instanceof Tile);
 				})
@@ -419,8 +427,9 @@ define([
 		var entities = this.world.entities;
 
 		entities.forEach(function (entity) {
-			console.log(entity.tile);
-		});
+			if(!this.world.contains(entity.tile))
+				this.world.removeEntity(entity);
+		}.bind(this));
 
 	};
 

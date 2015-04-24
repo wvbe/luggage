@@ -178,6 +178,9 @@ define([
 			this.addArtifact(new ArtifactHouse(this));
 	};
 
+	Tile.prototype.isWalkable = function () {
+		return !this.canStillBeChanged() && !this.isWater();
+	};
 	Tile.prototype.isWater = function () {
 		return this.z <= Z_SEA_LEVEL;
 	};

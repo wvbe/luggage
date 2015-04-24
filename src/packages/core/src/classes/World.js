@@ -184,6 +184,12 @@ define([
 	};
 
 
+	World.prototype.removeEntity = function (entity) {
+		var i = this.entities.indexOf(entity);
+		if(i >= 0)
+			this.entities.splice(i, 1);
+	};
+
 	// Sort function, used to sort a list of tiles by their X/Y position towards the viewer's perspective.
 	function furthestTilesFirst (a, b) {
 		if(a.y === b.y)

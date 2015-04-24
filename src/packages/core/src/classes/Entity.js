@@ -75,7 +75,7 @@ define([
 	};
 
 	Entity.prototype.canMoveBetweenTiles = function (a, b) {
-		return !(Math.abs(b.z - a.z) > 2) && !b.isWater();
+		return !(Math.abs(b.z - a.z) > 2) && b.isWalkable();
 	};
 
 	/**
@@ -101,8 +101,9 @@ define([
 	Entity.prototype.walk = function (path, whenDone) {
 		if(!path || !path.length)
 			return Promise.reject(new Error('CANNOT_WALK__NO_PATH')).catch(function (err) {
-				this.emit('move:error', err);
+				if(typeof whenDone === 'function') whenDone(err);
 				this.stop();
+				this.emit('move:error', err);
 			}.bind(this));
 
 		this._whenWalkDone = typeof whenDone === 'function' ? whenDone : null;
@@ -122,9 +123,9 @@ define([
 			this.path = path;
 
 		if(!this.path || !this.path.length) {
-			this.emit('move:finish');
 			if(typeof this._whenWalkDone === 'function')
 				this._whenWalkDone();
+			this.emit('move:finish');
 			return;
 		}
 
@@ -132,8 +133,10 @@ define([
 
 		if(!this.moving)
 			this._move(nextTile).then(this._walk.bind(this)).catch(function (err) {
-				this.emit('move:error', err);
+				if(typeof this._whenWalkDone === 'function')
+					this._whenWalkDone(err);
 				this.stop();
+				this.emit('move:error', err);
 			}.bind(this));
 	};
 
@@ -144,6 +147,17 @@ define([
 	 * Tell the provided renderer how to yield a visual representation of the player
 	 * @param {Renderer} renderer
 	 */
+	Entity.prototype.renderPath = function (renderer) {
+		if(this.path && this.path.length >= 2) {
+			renderer.context.lineWidth = 3;
+			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
+					return [tile.x + 0.5, tile.y + 0.5, tile.z];
+				}),
+				new Color('yellow').setAlpha(0.7)
+			);
+			renderer.context.lineWidth = 1;
+		}
+	};
 	Entity.prototype.render = function (renderer) {
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(

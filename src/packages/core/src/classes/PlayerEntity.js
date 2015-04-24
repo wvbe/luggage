@@ -22,16 +22,7 @@ define([
 
 	PlayerEntity.prototype.render = function (renderer) {
 		Entity.prototype.render.apply(this, arguments);
-
-		if(this.path && this.path.length >= 2) {
-			renderer.context.lineWidth = 3;
-			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
-					return [tile.x + 0.5, tile.y + 0.5, tile.z];
-				}),
-				new Color('yellow').setAlpha(0.7)
-			);
-			renderer.context.lineWidth = 1;
-		}
-	}
+		Entity.prototype.renderPath.apply(this, arguments);
+	};
 	return PlayerEntity;
 });

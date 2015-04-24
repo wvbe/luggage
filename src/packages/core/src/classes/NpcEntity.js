@@ -30,17 +30,22 @@ define([
 	NpcEntity.prototype = Object.create(Entity.prototype);
 	NpcEntity.prototype.constructor = NpcEntity;
 
+	NpcEntity.prototype.getName = function () {
+		return this.properties.name;
+	};
+
 	NpcEntity.prototype.startRandomMoving = function (world) {
 		this.active = true;
 
 		this.keepMakingRandomMoves(world);
 	};
 
-	NpcEntity.prototype.makeRandomMove = function (world) {
-		console.log('Entity making a random move', this.tile);
-		var withinRange = world.getTilesWithinRanges(this.tile, [7, 3])[0],
+	NpcEntity.prototype.makeRandomMove = function (world, whenDone) {
+		var withinRange = world.getTilesWithinRanges(this.tile, [7, 3])[0].filter(function (tile) {
+				return tile.isWalkable();
+			}),
 			randomWithinRange = util.randomFromArray(withinRange);
-		return this.walkToTile(world, randomWithinRange);
+		return this.walkToTile(world, randomWithinRange, whenDone);
 	};
 
 	NpcEntity.prototype.keepMakingRandomMoves = function (world) {
@@ -48,16 +53,19 @@ define([
 			if(!this.active)
 				return;
 
-			this.makeRandomMove(world);
-			this.once('move:finish', function () {
+			this.makeRandomMove(world, function (err) {
 				this.keepMakingRandomMoves(world);
-			}.bind(this))
-		}.bind(this), 10 * 1000 * Math.random());
+			}.bind(this));
+		}.bind(this), 3000 + 6 * 1000 * Math.random());
 	};
 
 	NpcEntity.prototype.getProperty = function (propertyName) {
 		return this.properties[propertyName];
 	};
 
+	NpcEntity.prototype.render = function (renderer) {
+		Entity.prototype.render.apply(this, arguments);
+		Entity.prototype.renderPath.apply(this, arguments);
+	};
 	return NpcEntity;
 });
