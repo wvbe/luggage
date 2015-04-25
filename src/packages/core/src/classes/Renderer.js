@@ -125,7 +125,7 @@ define([
 	 * @param {Number} x
 	 * @param {Number} y
 	 */
-	Renderer.prototype.setOffset = function (x, y, z) {
+	Renderer.prototype.setCameraOffset = function (x, y, z) {
 		VIRTUAL_CAMERA_OFFSET = {
 			x: x,
 			y: y,
@@ -145,7 +145,6 @@ define([
 			x: -x,
 			y: -y
 		};
-		this.canvas.classList.add('transitioning');
 		this.canvas.style.top = ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
 		this.canvas.style.left = ABSOLUTE_VIEWPORT_OFFSET.x + 'px';
 		this.canvas.style.marginTop = -ABSOLUTE_VIEWPORT_OFFSET.y + 'px';
@@ -181,7 +180,7 @@ define([
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
-		return this.setOffset(
+		return this.setCameraOffset(
 			-coords[0],
 			-coords[1]
 		);
@@ -258,7 +257,7 @@ define([
 
 	Renderer.prototype.strokeLine = function (waypoints, strokeColor) {
 
-	}
+	};
 
 	/**
 	 * A circle is a circle, but this one is positioned on a set of virtual coordinates

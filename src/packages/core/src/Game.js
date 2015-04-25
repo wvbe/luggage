@@ -118,7 +118,7 @@ define([
 		// Parallax scrolling to 
 		this.backdrop = document.getElementById('backdrop');
 
-		this.minimap = new Minimap(document.getElementById('minimap'), this.world, this.player);
+		//this.minimap = new Minimap(document.getElementById('minimap'), this.world, this.player);
 
 		this._init();
 	}
@@ -132,14 +132,15 @@ define([
 		// PlayerEntity thoughts make tooltips
 		this.player.on('thought', this.playerTooltip.bind(this));
 
-
-
+		console.log('Generating');
+		console.time('Generating');
 		// Generate the initial contents of the world, and iterate it 11 times
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, FOG_OF_WAR_DISTANCE));
 		for(var i = 0, center = this.player.tile; i < INITIAL_TERRAIN_ITERATIONS; ++i)
 			this.iterateTerrain(center);
+		console.timeEnd('Generating');
 
-		var minimapRenderer = util.debounce(this.minimap.render.bind(this.minimap), 500);
+		//var minimapRenderer = util.debounce(this.minimap.render.bind(this.minimap), 500);
 
 		// When player moves...
 		this.player.on('move', function (tile) {
@@ -153,7 +154,7 @@ define([
 			// Look at the new player location
 			this.focusOnTile(tile);
 
-			minimapRenderer();
+			//minimapRenderer();
 
 			// Update the parallax
 			var bgPos = this.renderer.pixelForCoordinates(
@@ -165,7 +166,7 @@ define([
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
 		}.bind(this));
 
-		this.player.on('move:error', function (err) {
+		this.player.on('error', function (err) {
 			this.playerTooltip(err.message);
 		}.bind(this));
 
@@ -237,7 +238,7 @@ define([
 			this.worldTooltipRenderer.render();
 		}.bind(this));
 
-		this.minimap.render();
+		//this.minimap.render();
 
 	};
 	/**

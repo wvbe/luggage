@@ -7,69 +7,42 @@ $ISOMETRIC_Y_TO_X_OFFSET: 0.3; // For every n on the Y axis, displace n*OFFSET t
 $ISOMETRIC_Y_TO_X_RATIO: 0.6;  // n on the Y axis is always this ratio of (horizontal) units
 $ISOMETRIC_Z_TO_X_RATIO: 1; // n on the Z axis is always this ratio of (horizontal) units
 
+$tooltip-background: rgba(0,0,0,0.5);
+
 html, body {
 	margin: 0;
 	padding: 0;
-	background: url('images/upfeathers.png');
 }
 body {
 	font-family: 'Ubuntu', sans-serif;
 	font-size: $UNIT;
 }
-.wrapper {
-	/* position */
+
+#viewport {
 	position: absolute;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	padding: 0;
-	/* behaviour */
-	display: flex;
-	flex-direction: row;
 
-	/* the looks */
-	background-color: #fff;
-	box-shadow: 0px 5px 15px #d4d0c7;
-	border-radius: 3px;
 	overflow: hidden;
 
-	/* children */
-
-	&__viewport {
-		height: 100%; //$ISOMETRIC_VIEW_DIAMETER * $ISOMETRIC_Y_TO_X_RATIO * $TILE_SIZE;
-
-		flex: 1 1 100%; //$ISOMETRIC_VIEW_DIAMETER * (1 + $ISOMETRIC_Y_TO_X_OFFSET) * $TILE_SIZE;
-		position: relative;
-		min-width: 300px;
-		min-height: 200px;
-		overflow: hidden;
-
-		#world,
-		#player {
-			transition: top $time-short linear, left $time-short linear;
-		}
-		> * {
-			position: absolute;
-			top: 0%;
-			left: 0%;
-			right: 0%;
-			bottom: 0%;
-			width: 100%;
-			height: 100%;
-			//background-color: rgb(38, 91, 38);
-		}
+	> * {
+		position: absolute;
+		top: 0%;
+		left: 0%;
+		right: 0%;
+		bottom: 0%;
+		width: 100%;
+		height: 100%;
 	}
-	&__sidebar {
-		flex: 0 0 200px;
-	}
+}
 
+#world,
+#player {
+	transition: top $time-short linear, left $time-short linear;
 }
-#dump-current-tile {
 
-}
-#viewport {
-}
 #backdrop {
 	transition: background-position 0.5s linear;
 	background: {
@@ -89,23 +62,17 @@ body {
 }
 
 
-
-$tooltip-background: rgba(0,0,0,0.5);
-
-
 .tooltip {
 	position: absolute;
 	z-index: 9000;
 	width: 200px;
-	margin-left: -100px;
+	transform: translateX(-50%);
 	margin-bottom: 32px;
-	bottom: 50%;
-	left: 50%;
+
 	transition: bottom $time-short linear, left $time-short linear;
 	background-color: $tooltip-background;
 	border-radius: 4px;
 	color: #fff;
-
 
 	text-align: center;
 
@@ -123,9 +90,7 @@ $tooltip-background: rgba(0,0,0,0.5);
 		border-color: $tooltip-background transparent transparent transparent;
 	}
 
-	&.language {
-		padding: $SPACING;
-	}
+	&.language,
 	&.menu {
 		padding: $SPACING/2 0;
 	}

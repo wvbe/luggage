@@ -13,12 +13,9 @@ html
 		script(src='/app.js')
 		// endbuild
 	body
-		.wrapper
-			canvas#minimap(width='60', height='60')
-			.wrapper__viewport#viewport
-				#backdrop
-				canvas#world(width='640', height='480')
-				canvas#player(width='640', height='480')
-				#expressions
-				#world-tooltip-renderer
-			.wrapper__sidebar
+		#viewport
+			#backdrop
+			canvas#world(width='640', height='480')
+			canvas#player(width='640', height='480')
+			#expressions
+			#world-tooltip-renderer

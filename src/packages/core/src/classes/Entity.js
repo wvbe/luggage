@@ -98,12 +98,17 @@ define([
 		return this.walk(this.findPathToTile(world, tile), whenDone);
 	};
 
+	Entity.prototype.error = function (error, callback) {
+		if(typeof callback === 'function')
+			callback(error);
+
+		this.stop();
+		this.emit('error', error);
+	};
 	Entity.prototype.walk = function (path, whenDone) {
 		if(!path || !path.length)
 			return Promise.reject(new Error('CANNOT_WALK__NO_PATH')).catch(function (err) {
-				if(typeof whenDone === 'function') whenDone(err);
-				this.stop();
-				this.emit('move:error', err);
+				this.error(err, whenDone);
 			}.bind(this));
 
 		this._whenWalkDone = typeof whenDone === 'function' ? whenDone : null;
@@ -133,10 +138,7 @@ define([
 
 		if(!this.moving)
 			this._move(nextTile).then(this._walk.bind(this)).catch(function (err) {
-				if(typeof this._whenWalkDone === 'function')
-					this._whenWalkDone(err);
-				this.stop();
-				this.emit('move:error', err);
+				this.error(err, this._whenWalkDone);
 			}.bind(this));
 	};
 
@@ -149,7 +151,7 @@ define([
 	 */
 	Entity.prototype.renderPath = function (renderer) {
 		if(this.path && this.path.length >= 2) {
-			renderer.context.lineWidth = 3;
+			renderer.context.lineWidth = 1;
 			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
 					return [tile.x + 0.5, tile.y + 0.5, tile.z];
 				}),
@@ -163,7 +165,7 @@ define([
 		renderer.fillPerfectCircle(
 			this.tile.x + 0.5, // Positioned on the middle...
 			this.tile.y + 0.5, // ... of the x and y of tile
-			this.tile.z + sphereRadius, // Center is on same tile z + it's own radius
+			this.tile.z + 0.5 + sphereRadius, // Center is on same tile z + it's own radius
 			sphereRadius,
 			this.strokeColor,
 			this.fillColor

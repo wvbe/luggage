@@ -126,7 +126,7 @@ define([
 	};
 
 	Tile.prototype.getSurfaceCoordinates = function () {
-		return [this.x, this.y, this.z];
+		return [this.x + 1, this.y, this.z];
 	};
 
 	Tile.prototype.lock = function (registry) {

@@ -16,7 +16,8 @@ define([
 		//EventEmitter.call(this);
 		ObjectStore.call(this, {
 			requireInstanceOf: Tile,
-			primaryKey: 'id'
+			primaryKey: 'id',
+			cacheList: true
 		});
 
 		this.entities = [];
@@ -34,6 +35,7 @@ define([
 			id = id.join(',');
 		return ObjectStore.prototype.get.call(this, id);
 	};
+
 	World.prototype.delete = function (id) {
 		if(Array.isArray(id))
 			id = id.join(',');
