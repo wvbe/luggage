@@ -61,6 +61,12 @@ body {
 	height: 100%;
 }
 
+#tile-view {
+	position: absolute;
+	bottom: $SPACING;
+	right: $SPACING;
+	z-index: 9000;
+}
 
 .tooltip {
 	position: absolute;

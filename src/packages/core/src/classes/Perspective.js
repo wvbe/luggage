@@ -1,12 +1,24 @@
 define([
+	'tiny-emitter',
 ], function(
+	EventEmitter
 ) {
 
-	function Perspective() {
-		this.setTileSize(32);
-		this.setIsometricAngle(30);
-		this.setOffset(0, 0, 0);
+	function Perspective(element, tileSize, isometricAngle) {
+		EventEmitter.call(this);
+
+		this.setTileSize(tileSize || 32);
+		this.setIsometricAngle(isometricAngle || 30);
+		this.setOffset(0, 0);
+
+		this.updateSizeForElement(element);
+		window.addEventListener('resize', function () {
+			this.updateSizeForElement(element);
+		}.bind(this));
 	}
+
+	Perspective.prototype = Object.create(EventEmitter.prototype);
+	Perspective.prototype.constructor = Perspective;
 
 	/**
 	 * Get the pixel length of one virtual unit of measurement, the absolute zoom value
@@ -16,7 +28,7 @@ define([
 		return this.tileSize;
 	};
 
-	/**
+	/**resize
 	 * Set the pixel length of a virtual unit of measurement, the absolute zoom value
 	 * @param tileSize
 	 * @returns {Perspective}
@@ -50,7 +62,21 @@ define([
 		};
 		return this;
 	};
+	Perspective.prototype.updateSizeForElement = function (element) {
+			var bb = element.getBoundingClientRect(),
+				size = {
+					x: parseInt(bb.width),
+					y: parseInt(bb.height)
+				},
+				changed = (!this.size || size.x !== this.size.x || size.y !== this.size.y);
 
+		this.size = size;
+
+		if(changed)
+			this.emit('resize', this);
+
+		return this;
+	};
 
 	/**
 	 * Transform virtual coordinates to an X and Y
@@ -65,15 +91,15 @@ define([
 			cartY = (x - y) * this._isometricSin;
 
 		return [
-			(omitOffset ? 0 : this.cameraOffset.x + 0.5 * this.canvas.width)  + cartX * this.tileSize, // x
-			(omitOffset ? 0 : this.cameraOffset.y + 0.5 * this.canvas.height) + cartY * this.tileSize - this.tileHeight * z // y
+			(omitOffset ? 0 : this.offset.x + 0.5 * this.size.x)  + cartX * this.tileSize, // x
+			(omitOffset ? 0 : this.offset.y + 0.5 * this.size.y) + cartY * this.tileSize - this.tileHeight * z // y
 		];
 	};
 
 	Perspective.prototype.coordinatesForPixel = function (cartX, cartY, omitOffset) {
 		// assuming y = ax + b
-		cartX = cartX  - 0.5 * this.canvas.width  - (omitOffset ? 0 : this.cameraOffset.x);
-		cartY = -cartY + 0.5 * this.canvas.height + (omitOffset ? 0 : this.cameraOffset.y);
+		cartX = cartX  - 0.5 * this.size.x  - (omitOffset ? 0 : this.offset.x);
+		cartY = -cartY + 0.5 * this.size.y + (omitOffset ? 0 : this.offset.y);
 
 		var isoY = (this._isometricTan * cartX + cartY),
 			isoX = (cartY - isoY) / -this._isometricSin - isoY;

@@ -12,7 +12,8 @@ define([
 	'./classes/Renderer',
 	'./classes/PlayerEntity',
 	'./classes/NpcEntity',
-	'./classes/Minimap'
+	'./classes/Minimap',
+	'./classes/Perspective'
 ], function (
 	ui,
 	util,
@@ -27,7 +28,8 @@ define([
 	Renderer,
 	PlayerEntity,
 	NpcEntity,
-	Minimap
+	Minimap,
+	Perspective
 ) {
 	var
 		// Speed of the parallax backdrop, relative to player movement
@@ -70,21 +72,33 @@ define([
 		// Service that handles the player character's mental or verbal expressions
 		this.expressions = new ui.TooltipSlot('expressions', {}, document.getElementById('expressions'));
 
+		this.perspective = new Perspective(document.getElementById('viewport'), 32, 30);
+
 		// Contains the material that makes up a comprehensive world
 		this.world = new World(this);
 
 		// The canvas to render the world to, if you so please
-		this.renderer = new Renderer(document.getElementById('world'))
+		this.renderer = new Renderer(this.perspective, document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 
-		this.worldTooltipRenderer = new Renderer(document.getElementById('expressions'))
+		this.tileRenderer = new Renderer(
+			new Perspective(document.getElementById('tile-view'), 128, 20),
+			document.getElementById('tile-view')
+		).onRender(function (renderer) {
+				var tile = this.player.tile;
+				console.log('Rendering tile-view', renderer);
+				renderer.panToTile(tile.x + 0.5, tile.y + 0.5, 3);
+				this.player.tile.render(renderer);
+			}.bind(this));
+
+		this.worldTooltipRenderer = new Renderer(this.perspective, document.getElementById('expressions'))
 			.onRender(function (renderer) {
 				var tooltip = this.expressions.getCurrent();
 
 				if(!tooltip)
 					return;
 
-				var cartOffset = renderer.pixelForCoordinates(
+				var cartOffset = renderer.perspective.pixelForCoordinates(
 						tooltip.coordinates[0],
 						tooltip.coordinates[1],
 						tooltip.coordinates[2],
@@ -111,7 +125,7 @@ define([
 		});
 		
 		// The canvas to render the player to
-		this.cursor = new Renderer(document.getElementById('player'))
+		this.cursor = new Renderer(this.perspective, document.getElementById('player'))
 			.onRender(this.player.render.bind(this.player));
 
 
@@ -157,13 +171,16 @@ define([
 			//minimapRenderer();
 
 			// Update the parallax
-			var bgPos = this.renderer.pixelForCoordinates(
+			var bgPos = this.perspective.pixelForCoordinates(
 				tile.x * PARALLAX_MODIFIER,
 				tile.y * PARALLAX_MODIFIER,
 				tile.z * PARALLAX_MODIFIER,
 				true
 			);
 			this.backdrop.setAttribute('style', 'background-position: ' + bgPos[0] +'px ' + bgPos[1] + 'px;');
+
+			this.tileRenderer.clear();
+			this.tileRenderer.render();
 		}.bind(this));
 
 		this.player.on('error', function (err) {
@@ -188,7 +205,7 @@ define([
 		// @TODO: Give Tile methods to flag it with stuff
 		document.getElementById('viewport').addEventListener('mousemove', function (event) {
 			var hoveredTile = this.world.tileForCoordinates(
-				this.renderer.coordinatesForPixel(event.layerX, event.layerY, false)
+				this.perspective.coordinatesForPixel(event.layerX, event.layerY, false)
 			);
 
 			if(hoveredTile === lastHoveredTile)
@@ -211,7 +228,7 @@ define([
 			var offset = getClickOffsetInParent(event, viewportElement);
 
 			var tile = this.world.tileForCoordinates(
-				this.renderer.coordinatesForPixel(offset[0], offset[1], false)
+				this.perspective.coordinatesForPixel(offset[0], offset[1], false)
 			);
 			switch(event.which) {
 				case 1:
@@ -232,7 +249,7 @@ define([
 
 			var offset = getClickOffsetInParent(event, viewportElement),
 				tile = this.world.tileForCoordinates(
-				this.renderer.coordinatesForPixel(offset[0], offset[1], false)
+				this.perspective.coordinatesForPixel(offset[0], offset[1], false)
 			);
 			this.expressions.open(new ui.MenuTooltip(tile.getSurfaceCoordinates(), tile.getMenuItems(), MENU_TOOLTIP_OPTIONS));
 			this.worldTooltipRenderer.render();

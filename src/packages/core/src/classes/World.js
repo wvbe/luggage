@@ -173,8 +173,11 @@ define([
 	 *
 	 * @TODO Make unspecific for tiles by removing/repurposing "furthestTilesFirst" sorter
 	 */
-	World.prototype.renderTiles = function (renderer) {
-		this.list()
+	World.prototype.renderTiles = function (renderer, tiles) {
+		if(tiles === undefined)
+			tiles = this.list();
+
+		tiles
 			.sort(furthestTilesFirst)
 			.forEach(function (tile) {
 				tile.render(renderer);

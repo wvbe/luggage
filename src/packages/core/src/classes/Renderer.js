@@ -1,25 +1,7 @@
 define([
 ], function(
 ) {
-
-
-	// @TODO: Not so ugly plz
-
-
-	var ISOMETRIC_ANGLE = 30 * (Math.PI / 180),
-		ISOMETRIC_COS = Math.cos(ISOMETRIC_ANGLE),
-		ISOMETRIC_SIN = Math.sin(ISOMETRIC_ANGLE),
-		ISOMETRIC_TAN = Math.tan(ISOMETRIC_ANGLE),
-		ISOMETRIC_DIST = Math.sqrt(ISOMETRIC_COS*ISOMETRIC_COS + ISOMETRIC_SIN*ISOMETRIC_SIN); // the length of a diagonal, in pixels
-
-	var TILE_SIZE = 32,
-		TILE_HEIGHT = TILE_SIZE/6;
-
-	var VIRTUAL_CAMERA_OFFSET = {
-			x: 0,
-			y: 0
-		},
-		ABSOLUTE_VIEWPORT_OFFSET = {
+	var ABSOLUTE_VIEWPORT_OFFSET = {
 			x: 0,
 			y: 0
 		};
@@ -31,7 +13,8 @@ define([
 	 * @param canvasElement
 	 * @constructor
 	 */
-	function Renderer(canvasElement) {
+	function Renderer(perspective, canvasElement) {
+		this.perspective = perspective;
 		this.canvas = canvasElement;
 
 		if(canvasElement.localName === 'canvas')
@@ -39,9 +22,9 @@ define([
 
 		this._render = null;
 
-		this.resize();
+		this.resize(perspective);
 
-		window.addEventListener('resize', this.resize.bind(this));
+		perspective.on('resize', this.resize.bind(this));
 	}
 
 	/**
@@ -71,19 +54,9 @@ define([
 	 * Update the canvas after the dimensions might've changed
 	 * @returns {Renderer}
 	 */
-	Renderer.prototype.resize = function () {
-		var bb = this.canvas.getBoundingClientRect(),
-			newWidth = parseInt(bb.width),
-			newHeight = parseInt(bb.height);
-
-		if(this.canvas.width === newWidth && this.canvas.height === newHeight)
-			return this;
-
-		this.canvas.width = newWidth;
-		this.canvas.height = newHeight;
-//
-//		this.context.shadowColor = 'rgb(20, 41, 20)';
-//		this.context.shadowOffsetY = 6;
+	Renderer.prototype.resize = function (perspective) {
+		this.canvas.width = perspective.size.x;
+		this.canvas.height = perspective.size.y;
 
 		this.render();
 
@@ -100,40 +73,6 @@ define([
 		return this;
 	};
 
-	/**
-	 * Get the pixel length of one virtual unit of measurement, the absolute zoom value
-	 * @returns {number}
-	 */
-	Renderer.prototype.getTileSize = function () {
-		return TILE_SIZE;
-	};
-
-	/**
-	 * Set the pixel length of a virtual unit of measurement, the absolute zoom value
-	 * @param tileSize
-	 * @returns {Renderer}
-	 */
-	Renderer.prototype.setTileSize = function (tileSize) {
-		TILE_SIZE = tileSize;
-		TILE_HEIGHT = tileSize/6;
-
-		return this;
-	};
-
-	/**
-	 * Pan render camera to pixel values
-	 * @param {Number} x
-	 * @param {Number} y
-	 */
-	Renderer.prototype.setCameraOffset = function (x, y, z) {
-		VIRTUAL_CAMERA_OFFSET = {
-			x: x,
-			y: y,
-			z: z
-		};
-
-		return this;
-	};
 	/**
 	 * Position the canvas element differently (also pixel values) so that it may be transitioned with CSS
 	 * @param x
@@ -158,16 +97,16 @@ define([
 	 */
 	function normalizeCoords(x,y,z) {
 		return typeof x === 'object' && !!x
-			? this.pixelForCoordinates(
-				x.x,
-				x.y,
-			x.z,
-			true)
-			: this.pixelForCoordinates(
+			? this.perspective.pixelForCoordinates(
+				x.x + 0.5,
+				x.y + 0.5,
+				x.z,
+				true)
+			: this.perspective.pixelForCoordinates(
 				x,
 				y,
-			z,
-			true);
+				z,
+				true);
 	}
 
 	/**
@@ -180,11 +119,12 @@ define([
 	Renderer.prototype.panToTile = function (x, y, z) {
 		var coords = normalizeCoords.apply(this, arguments);
 
-		return this.setCameraOffset(
+		this.perspective.setOffset(
 			-coords[0],
 			-coords[1]
 		);
 
+		return this;
 	};
 
 	/**
@@ -203,37 +143,6 @@ define([
 		);
 	};
 
-	/**
-	 * Transform virtual coordinates to an X and Y
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param omitOffset
-	 * @returns {*[]}
-	 */
-	Renderer.prototype.pixelForCoordinates = function (x, y, z, omitOffset) {
-		var cartX = (x + y) * ISOMETRIC_COS,
-			cartY = (x - y) * ISOMETRIC_SIN;
-		return [
-			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x + 0.5 * this.canvas.width)  + cartX * TILE_SIZE, // x
-			(omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y + 0.5 * this.canvas.height) + cartY * TILE_SIZE - TILE_HEIGHT * z // y
-		];
-	};
-
-	Renderer.prototype.coordinatesForPixel = function (cartX, cartY, omitOffset) {
-		// assuming y = ax + b
-		cartX = cartX  - 0.5 * this.canvas.width  - (omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.x);
-		cartY = -cartY + 0.5 * this.canvas.height + (omitOffset ? 0 : VIRTUAL_CAMERA_OFFSET.y);
-
-		var isoY = (ISOMETRIC_TAN * cartX + cartY),
-			isoX = (cartY - isoY) / -ISOMETRIC_SIN - isoY;
-
-		// this is good so far, b should be rescaled for tile size. as
-		return [
-			isoX / TILE_SIZE,
-			isoY / TILE_SIZE
-		];
-	};
 	/**
 	 * Close and fill/stroke the last shape that was drawn
 	 * @param strokeColor
@@ -255,9 +164,6 @@ define([
 		return this;
 	};
 
-	Renderer.prototype.strokeLine = function (waypoints, strokeColor) {
-
-	};
 
 	/**
 	 * A circle is a circle, but this one is positioned on a set of virtual coordinates
@@ -270,9 +176,9 @@ define([
 	 * @returns {Renderer}
 	 */
 	Renderer.prototype.fillPerfectCircle = function (x, y, z, radius, strokeColor, fillColor) {
-		var center = this.pixelForCoordinates(x, y, z);
+		var center = this.perspective.pixelForCoordinates(x, y, z);
 		this.context.beginPath();
-		this.context.arc(center[0], center[1], radius * TILE_SIZE, 0, 2 * Math.PI);
+		this.context.arc(center[0], center[1], radius * this.perspective.getTileSize(), 0, 2 * Math.PI);
 		this.context.closePath();
 
 		return this.finishLastShape(strokeColor, fillColor);
@@ -303,7 +209,7 @@ define([
 
 		coordinateSets = coordinateSets
 			.map(function (coords) {
-				return this.pixelForCoordinates(coords[0], coords[1], coords[2]);
+				return this.perspective.pixelForCoordinates(coords[0], coords[1], coords[2]);
 			}.bind(this));
 
 		// http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
@@ -356,7 +262,7 @@ define([
 	 function drawSpatialPolygon (coordinateSets, strokeColor, fillColor) {
 		coordinateSets
 			.map(function (coords) {
-				return this.pixelForCoordinates(coords[0], coords[1], coords[2]);
+				return this.perspective.pixelForCoordinates(coords[0], coords[1], coords[2]);
 			}.bind(this))
 			.forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
@@ -401,10 +307,10 @@ define([
 
 		this.context.beginPath();
 		[
-			this.pixelForCoordinates(xa, ya, za),
-			this.pixelForCoordinates(xa, ya, za + height),
-			this.pixelForCoordinates(xb, yb, zb + height),
-			this.pixelForCoordinates(xb, yb, zb)
+			this.perspective.pixelForCoordinates(xa, ya, za),
+			this.perspective.pixelForCoordinates(xa, ya, za + height),
+			this.perspective.pixelForCoordinates(xb, yb, zb + height),
+			this.perspective.pixelForCoordinates(xb, yb, zb)
 		].forEach(function (coords, i) {
 				this.context[i === 0 ? 'moveTo' : 'lineTo'](coords[0], coords[1]);
 			}.bind(this));
