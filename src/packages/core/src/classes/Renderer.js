@@ -249,10 +249,10 @@ define([
 		return this.strokeBoxHalo(
 			tile.x,
 			tile.y,
-			0.5,
+			0,
 			1,
 			1,
-			tile.z + 0.5,
+			tile.z,
 			strokeColor || tile.strokeColor,
 			fillColor,
 			haloOffset

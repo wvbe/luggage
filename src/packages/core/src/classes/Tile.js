@@ -3,12 +3,18 @@ define([
 	'util',
 
 	'./ArtifactHouse',
+	'./ArtifactVegetation',
+	'./ArtifactFence',
+	'./ArtifactStones',
 	'./MenuItem'
 ], function(
 	Color,
 	util,
 
 	ArtifactHouse,
+	ArtifactVegetation,
+	ArtifactFence,
+	ArtifactStones,
 	MenuItem
 	) {
 
@@ -18,9 +24,6 @@ define([
 		Z_BEACH_LEVEL = 1,
 		Z_GRASS_LEVEL = 3,
 		Z_BARREN_LEVEL = 9,
-
-		// The virtual Z offset that is given to the waterline, to make it more distinct
-		ACTUAL_WATERLINE_Z = 0.5,
 
 		MAX_TILE_Z = Z_BARREN_LEVEL,
 
@@ -173,13 +176,17 @@ define([
 			return;
 
 		this.strokeColor = this.fillColor.darkenByRatio(0.3);
-
-		if(this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL && Math.random() < 0.1)
-			this.addArtifact(new ArtifactHouse(this));
+		if(this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL) {
+			this.addArtifact(new ArtifactVegetation(this));
+			if(Math.random() < 0.1) {
+				this.addArtifact(new ArtifactHouse(this));
+				this.addArtifact(new ArtifactFence(this));
+			}
+		}
 	};
 
 	Tile.prototype.isWalkable = function () {
-		return !this.canStillBeChanged() && !this.isWater();
+		return !this.canStillBeChanged() && !this.isWater() && this.artifacts.every(function (artifact) { return artifact.isWalkable() });
 	};
 	Tile.prototype.isWater = function () {
 		return this.z <= Z_SEA_LEVEL;
@@ -194,7 +201,7 @@ define([
 			renderer.fillFlatPlane (
 				this.x,
 				this.y,
-				ACTUAL_WATERLINE_Z,
+				0,
 				1,
 				1,
 				this.strokeColor,
@@ -202,15 +209,20 @@ define([
 			);
 		} else {
 			if(RENDER_MODE_BOX === 'halo' || this.hovered)
-				renderer.fillTileHalo(this, this.strokeColor, this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0), 0);
+				renderer.fillTileHalo(
+					this,
+					this.strokeColor,
+					this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0),
+					0
+				);
 			else// if(RENDER_MODE_BOX === 'cube')
 				renderer.fillBox(
 					this.x,
 					this.y,
-					ACTUAL_WATERLINE_Z,
+					0,
 					1,
 					1,
-					this.z + ACTUAL_WATERLINE_Z,
+					this.z,
 					this.strokeColor,
 					this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
 				);

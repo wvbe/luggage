@@ -17,6 +17,11 @@ define([
 		return [];
 	};
 
+	Artifact.prototype.isWalkable = function () {
+		return true;
+	};
+
+
 	Artifact.prototype.render = function (renderer, tile) {
 		throw new Error('Not implemented');
 	};
