@@ -10,6 +10,8 @@ define([
 	function ArtifactStones(tile, amount) {
 		Artifact.call(this);
 
+		this.name = 'ARTIFACT_STONES';
+
 		this.grass = [];
 
 		for(var i = 0, max = amount * 3 * Math.random(); i < max; i++) {

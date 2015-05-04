@@ -10,6 +10,7 @@ define([
 	function ArtifactFence() {
 		Artifact.call(this);
 
+		this.name = 'ARTIFACT_FENCE';
 	}
 
 	ArtifactFence.prototype = Object.create(Artifact.prototype);

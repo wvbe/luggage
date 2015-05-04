@@ -11,6 +11,8 @@ define([
 	function ArtifactHouse(tile) {
 		Artifact.call(this);
 
+		this.name = 'ARTIFACT_HOUSE';
+
 		this.size = [
 			0.15 + Math.random() * 0.4,
 			0.15 + Math.random() * 0.4,

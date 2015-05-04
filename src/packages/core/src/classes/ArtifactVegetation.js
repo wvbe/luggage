@@ -10,6 +10,8 @@ define([
 	function ArtifactVegetation() {
 		Artifact.call(this);
 
+		this.name = 'ARTIFACT_VEGETATION';
+
 		this.grass = [];
 
 		for(var i = 0, max = 3 + 10 * Math.random(); i < max; i++) {

@@ -157,7 +157,7 @@ define([
 						saturation: 0,
 						lightness: 0.13
 					}), beachNess).lightenByRatio(0.2);
-				//this.addArtifact(new ArtifactStones(this, beachNess));
+				this.addArtifact(new ArtifactStones(this, beachNess));
 				break;
 			case 'grass':
 				this.fillColor = baseColor;
@@ -171,7 +171,7 @@ define([
 					.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
 					.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
 
-				//this.addArtifact(new ArtifactStones(this, 1 - levelOfBarrenness));
+				this.addArtifact(new ArtifactStones(this, 1 - levelOfBarrenness));
 				break;
 			default:
 				break;

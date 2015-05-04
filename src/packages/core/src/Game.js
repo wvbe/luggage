@@ -91,6 +91,11 @@ define([
 			})
 			.addStatistic(document.getElementById('current-tile__climate'), function (tile) {
 				return tile.getClimate()
+			})
+			.addStatistic(document.getElementById('current-tile__artifacts'), function (tile) {
+				return !tile.artifacts.length ? 'none' : tile.artifacts.map(function (artifact) {
+					return language.objects.get(artifact.name).toLowerCase();
+				}).join(', ');
 			});
 
 		// The canvas to render the world to, if you so please
