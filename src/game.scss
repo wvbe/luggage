@@ -54,13 +54,6 @@ $tooltip-background: #1b1b1b;
 	height: 100%;
 }
 
-#tile-view {
-	position: absolute;
-	bottom: $SPACING;
-	right: $SPACING;
-	z-index: 9000;
-}
-
 .tooltip {
 	position: absolute;
 	z-index: 9000;

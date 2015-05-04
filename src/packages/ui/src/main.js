@@ -1,4 +1,6 @@
 define([
+	'./Flag',
+
 	'./TooltipService',
 	'./TooltipSlot',
 
@@ -6,6 +8,8 @@ define([
 	'./tooltips/MenuTooltip',
 	'./tooltips/RandomLanguageTooltip'
 ], function (
+	Flag,
+
 	TooltipService,
 	TooltipSlot,
 
@@ -14,6 +18,8 @@ define([
 	RandomLanguageTooltip
 ) {
 	return {
+		Flag: Flag,
+
 		TooltipService: TooltipService,
 		TooltipSlot: TooltipSlot,
 

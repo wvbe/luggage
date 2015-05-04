@@ -128,6 +128,10 @@ define([
 		}, []));
 	};
 
+	/**
+	 *
+	 * @returns {Array<Number>}
+	 */
 	Tile.prototype.getSurfaceCoordinates = function () {
 		return [this.x + 1, this.y, this.z < 0 ? 0 : this.z];
 	};
@@ -139,42 +143,41 @@ define([
 
 		this.locked = true;
 
-
 		var tileRelativeHeight = (this.z > MAX_TILE_Z ? MAX_TILE_Z : this.z) / MAX_TILE_Z;
 		var baseColor = new Color('#1b1b1b');
 
-		if(this.isWater()) {
-			// Keep the default color
+		switch(this.getClimate()) {
+			case 'water':
+				return;
+			case 'beach':
+				var beachNess = 1 - this.z / Z_BEACH_LEVEL;
+				// Tile color is a blend between regular and sandy tile color
+				this.fillColor = baseColor.blend(new Color({ // beach color
+						hue: 30,
+						saturation: 0,
+						lightness: 0.13
+					}), beachNess).lightenByRatio(0.2);
+				//this.addArtifact(new ArtifactStones(this, beachNess));
+				break;
+			case 'grass':
+				this.fillColor = baseColor;
+				break;
+			case 'barren':
+				// If tile is above a certain level, gradually desaturate and lighten it, making it look like
+				// arid rocks and eventually snow.
+				var levelOfBarrenness = (this.z - Z_GRASS_LEVEL)/(Z_BARREN_LEVEL-Z_GRASS_LEVEL);
 
-		} else if (this.z <= Z_BEACH_LEVEL) {
-			var beachNess = 1 - this.z / Z_BEACH_LEVEL;
-			// Tile color is a blend between regular and sandy tile color
-			this.fillColor = baseColor.blend(new Color({ // beach color
-					hue: 30,
-					saturation: 0,
-					lightness: 0.13
-				}), beachNess).lightenByRatio(0.2);
+				this.fillColor = baseColor
+					.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
+					.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
 
-			//this.addArtifact(new ArtifactStones(this, beachNess));
-		} else if (this.z <= Z_GRASS_LEVEL) {
-			// Tile color is just the base color
-			this.fillColor = baseColor;
-		} else {
-			// If tile is above a certain level, gradually desaturate and lighten it, making it look like
-			// arid rocks and eventually snow.
-			var levelOfBarrenness = (this.z - Z_GRASS_LEVEL)/(Z_BARREN_LEVEL-Z_GRASS_LEVEL);
-
-			this.fillColor = baseColor
-				.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
-				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
-
-			//this.addArtifact(new ArtifactStones(this, 1 - levelOfBarrenness));
+				//this.addArtifact(new ArtifactStones(this, 1 - levelOfBarrenness));
+				break;
+			default:
+				break;
 		}
 
-		if(this.isWater())
-			return;
-
-		this.strokeColor = this.fillColor.darkenByRatio(0.3);
+		this.strokeColor = this.fillColor.lightenByAmount(0.1);
 		if(this.z > Z_BEACH_LEVEL && this.z < Z_GRASS_LEVEL) {
 			this.addArtifact(new ArtifactVegetation(this));
 			if(Math.random() < 0.1) {
@@ -183,6 +186,19 @@ define([
 					this.addArtifact(new ArtifactFence(this));
 				}
 			}
+		}
+	};
+
+	Tile.prototype.getClimate = function () {
+
+		if(this.isWater()) {
+			return 'water';
+		} else if (this.z <= Z_BEACH_LEVEL) {
+			return 'beach';
+		} else if (this.z <= Z_GRASS_LEVEL) {
+			return 'grass';
+		} else {
+			return 'barren';
 		}
 	};
 

@@ -77,17 +77,40 @@ define([
 		// Contains the material that makes up a comprehensive world
 		this.world = new World(this);
 
+		this.tileFlag = new ui.Flag();
+
+		//Game.prototype.updateFlagForTile = function (tile, currentTileElements) {
+		//	currentTileElements.coordinates.innerHTML = ;
+		//	currentTileElements.climate.innerHTML = tile.getClimate();
+		//};
+		this.tileFlag
+			.addStatistic(document.getElementById('current-tile__coordinates'), function (tile) {
+				return '(' + tile.getSurfaceCoordinates().map(function (coord) {
+						return Math.round(coord * 100) / 100;
+					}).join(', ') + ')';
+			})
+			.addStatistic(document.getElementById('current-tile__climate'), function (tile) {
+				return tile.getClimate()
+			});
+
 		// The canvas to render the world to, if you so please
 		this.renderer = new Renderer(this.perspective, document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
 		this.entitiesRenderer = new Renderer(this.perspective, document.getElementById('entities'))
 			.onRender(this.world.renderEntities.bind(this.world));
 
-		this.tileRenderer = new Renderer(
-			new Perspective(document.getElementById('tile-view'), 128, 20),
-			document.getElementById('tile-view')
-		).onRender(function (renderer) {
+		var currentTileElements = {
+			canvas: document.getElementById('current-tile__canvas'),
+			coordinates: document.getElementById('current-tile__coordinates'),
+			climate: document.getElementById('current-tile__climate'),
+			activity: document.getElementById('current-tile__activity')
+		};
+		this.tileRenderer = new Renderer(new Perspective(currentTileElements.canvas, 32, 20), currentTileElements.canvas)
+			.onRender(function (renderer) {
 				var tile = this.player.tile;
+
+				this.tileFlag.update(tile);
+
 				renderer.panToTile(tile.x + 0.5, tile.y + 0.5, 3);
 				this.player.tile.render(renderer);
 			}.bind(this));
@@ -153,6 +176,8 @@ define([
 		for(var i = 0, center = this.player.tile; i < INITIAL_TERRAIN_ITERATIONS; ++i)
 			this.iterateTerrain(center);
 		console.timeEnd('Generating');
+
+		this.tileFlag.update(this.player.tile);
 
 		//var minimapRenderer = util.debounce(this.minimap.render.bind(this.minimap), 500);
 
@@ -449,6 +474,7 @@ define([
 		outOfRangeTiles.forEach(function (tile) {
 			if(!(tile instanceof Tile))
 				return;
+			tile.destroyed = true;
 			registry.delete([tile.x, tile.y]);
 		}.bind(this));
 

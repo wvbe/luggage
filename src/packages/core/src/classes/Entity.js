@@ -21,9 +21,6 @@ define([
 		this.tile = tile;
 		this.path = [];
 
-		this.health = 100;
-		this.armor = 100;
-
 		// Some presentation stuffs
 		this.fillColor = new Color([255, 255, 255]);
 		this.strokeColor = new Color([50,50,50]);
@@ -55,6 +52,9 @@ define([
 	Entity.prototype._move = function (tile) {
 		return new Promise(function (resolve, reject) {
 			var time = this.options.moveInterval || 1000;
+
+			if(tile.destroyed)
+				return reject(new Error('CANNOT_MOVE__OBSTRUCTED'));
 
 			if(tile.isWater())
 				return reject(new Error('CANNOT_MOVE__WATER'));
@@ -127,15 +127,25 @@ define([
 	};
 
 	Entity.prototype._walk = function (path) {
-		if(path)
-			this.path = path;
 
+		// Clean up path tiles that became invalid while walking
+		path = path || this.path;
+		this.path = [];
+		for(var i = 0, m = path ? path.length : 0; i < m; ++i) {
+			var tile = path[i];
+			if(tile.destroyed)
+				break;
+			this.path.push(tile);
+		}
+
+		// Resolve as done when the path no longer has a length
 		if(!this.path || !this.path.length) {
 			if(typeof this._whenWalkDone === 'function')
 				this._whenWalkDone();
 			this.emit('move:finish');
 			return;
 		}
+
 
 		var nextTile = this.path.shift();
 
@@ -155,14 +165,28 @@ define([
 	Entity.prototype.renderPath = function (renderer) {
 		if(this.path && this.path.length >= 2) {
 			renderer.context.lineWidth = 1;
-			renderer.strokeSpatialBezier([this.tile].concat(this.path).map(function (tile) {
-					return [tile.x + 0.5, tile.y + 0.5, tile.z];
-				}),
-				new Color('yellow').setAlpha(0.7)
-			);
+			var path = [this.tile].concat(this.path);
+
+
+			renderBezierCurveThroughTiles(renderer, path, new Color('yellow').setAlpha(0.7));
+			renderHighlightedSurfaceEdgesForTiles(renderer, path, new Color('yellow').setAlpha(0.2));
 			renderer.context.lineWidth = 1;
 		}
 	};
+
+	function renderHighlightedSurfaceEdgesForTiles(renderer, path, color) {
+		path.forEach(function (tile) {
+			renderer.fillFlatPlane(tile.x, tile.y, tile.z, 1, 1, color);
+		});
+	}
+	function renderBezierCurveThroughTiles(renderer, path, color) {
+		renderer.strokeSpatialBezier(path.map(function (tile) {
+				return [tile.x + 0.5, tile.y + 0.5, tile.z];
+			}),
+			color
+		);
+	}
+
 	Entity.prototype.render = function (renderer) {
 		var sphereRadius = 0.15;
 		renderer.fillPerfectCircle(

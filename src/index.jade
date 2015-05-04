@@ -24,16 +24,13 @@ html
 			canvas#player(width='640', height='480')
 			#expressions
 			#world-tooltip-renderer
-		canvas#tile-view(width='250', height='400')
+
 
 		.player-banner
 			.player-banner__item.player-banner__item--fixed
 				.flag.player-banner__item
-					.flag__logo(tooltip='tooltip test m<otherfucker')
+					canvas#current-tile__canvas.flag__logo(width='250', height='400')
 					.flag__content
-						div(label='commit') d60a58e9
-						div(label='url') http://0x.ee
-						div#pagetitle(label='title') 0x.ee
-						div(label='author') wvbe (
-							a(href='mailto:wybe@x-54.com') wybe@x-54.com
-							| )
+						#current-tile__coordinates(label='coords') (x, y, z)
+						#current-tile__climate(label='climate') undetermined
+						#current-tile__activity(label='activity') none
