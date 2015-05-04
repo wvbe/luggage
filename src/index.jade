@@ -3,6 +3,7 @@ doctype
 html
 	head
 		title 0x.ee
+		link(href='http://fonts.googleapis.com/css?family=Anonymous+Pro' rel='stylesheet' type='text/css')
 		meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1')
 		// build:css
 		link(href='/style.css' rel='stylesheet' type='text/css')
@@ -13,10 +14,26 @@ html
 		script(src='/app.js')
 		// endbuild
 	body
+
+		section#windows
+
 		#viewport
 			#backdrop
 			canvas#world(width='640', height='480')
+			canvas#entities(width='640', height='480')
 			canvas#player(width='640', height='480')
 			#expressions
 			#world-tooltip-renderer
 		canvas#tile-view(width='250', height='400')
+
+		.player-banner
+			.player-banner__item.player-banner__item--fixed
+				.flag.player-banner__item
+					.flag__logo(tooltip='tooltip test m<otherfucker')
+					.flag__content
+						div(label='commit') d60a58e9
+						div(label='url') http://0x.ee
+						div#pagetitle(label='title') 0x.ee
+						div(label='author') wvbe (
+							a(href='mailto:wybe@x-54.com') wybe@x-54.com
+							| )

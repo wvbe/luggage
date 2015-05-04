@@ -182,10 +182,15 @@ define([
 			.forEach(function (tile) {
 				tile.render(renderer);
 			});
+	};
+	World.prototype.renderEntities = function (renderer, entities) {
+		if(entities === undefined)
+			entities = this.entities;
 
-		this.entities.forEach(function (entity) {
-			entity.render(renderer);
-		})
+		entities
+			.forEach(function (entity) {
+				entity.render(renderer);
+			});
 	};
 
 

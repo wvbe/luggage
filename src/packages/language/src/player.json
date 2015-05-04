@@ -21,5 +21,9 @@
 		"U mad, no way of getting there",
 		"Cannot be reached",
 		"I like turtles"
+	],
+	"CANNOT_MOVE__OBSTRUCTED": [
+		"I shall not pass",
+		"Obstructed."
 	]
 }

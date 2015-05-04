@@ -1,0 +1,28 @@
+body {
+	@extend %primary-script;
+	z-index: 0;
+	background-color: $bg;
+	overflow: hidden;
+}
+
+[label] {
+	&::before {
+		@extend %secondary-script;
+		display: inline-block;
+		content: attr(label);
+
+		width: 4 * $unit;
+	}
+}
+
+a {
+	background-color: $fg;
+	color: $bg;
+	padding: 0 0.2 * $unit;
+	text-decoration: none;
+	transition: background-color $time-fast;
+	&:hover {
+		background-color: $fg-light;
+		color: $bg-dark;
+	}
+}

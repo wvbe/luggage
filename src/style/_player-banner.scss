@@ -1,0 +1,23 @@
+.player-banner {
+	position: absolute;
+	top: $spacing;
+	left: $spacing;
+	width: 300px;
+
+	@extend %flexbox-column;
+	justify-content: space-between;
+	&__item {
+		width: 25 * $unit; // 450px
+		margin-bottom: $unit;
+		&--stretch {
+			@extend %flexbox-stretch;
+		}
+		&--fixed {
+			@extend %flexbox-fixed;
+
+		}
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}

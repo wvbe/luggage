@@ -59,6 +59,9 @@ define([
 			if(tile.isWater())
 				return reject(new Error('CANNOT_MOVE__WATER'));
 
+			if(!tile.isWalkable())
+				throw new Error('CANNOT_MOVE__OBSTRUCTED');
+
 			if(!this.canMoveBetweenTiles(this.tile, tile))
 				throw new Error('CANNOT_MOVE__TOO_STEEP');
 

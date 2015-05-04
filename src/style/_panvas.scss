@@ -1,0 +1,47 @@
+.panvas {
+	&__frame {
+		overflow: hidden;
+		position: absolute;
+		top: $ruler-size;
+		left: $ruler-size;
+		right: 0;
+		bottom: 0;
+		background-color: $bg-dark;
+		box-sizing: border-box;
+	}
+	&__picture {
+		position: absolute;
+		transition: all 0.2s;
+		opacity: 1;
+	}
+	&--loading,
+	&--error {
+		.panvas__picture {
+			opacity: 0;
+		}
+		&::before,&::after {
+			background-color: transparent;
+			background-image: none;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			height: auto;
+			border: none;
+			position: absolute;
+		}
+		&::before {
+			background-color: rgba($bg-dark, 0.9);
+			display: flex;
+			justify-content: center;
+			align-self: center;
+			align-items: center;
+		}
+	}
+	&--loading::before {
+		content: 'Loading image...';
+	}
+	&--error::before {
+		content: 'Image error ' attr(error);
+	}
+}

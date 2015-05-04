@@ -1,0 +1,207 @@
+%opacity-on-drag {
+	opacity: 1;
+	transition: opacity $time-fast;
+	.window--moving & {
+		opacity: 0.3;
+	}
+}
+
+.windows {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 750;
+}
+
+
+.window {
+	position: absolute;
+	min-width: 15 * $unit;
+	min-height: 10 * $unit;
+	background-color: $bg-semilight;
+	box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.4);
+	outline: 1px solid $fg-darker;
+	&--ghost {
+		box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+		position: absolute;
+		min-width: 15 * $unit;
+		min-height: 10 * $unit;
+		outline: 1px solid $fg-darker;
+		padding: $unit;
+		box-sizing: border-box;
+		background-color: rgba($bg, 0.75);
+	}
+	&--moving {
+		background-color: rgba($bg-light, 0.5);
+		&::before{
+			// An invisible layer to prevent mouse-over shite on the contents
+			display: block;
+			content: '';
+			position: absolute;
+			z-index: 1;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+	}
+
+	&--moving, &:hover {
+
+		&::after {
+			display: block;
+			content: '';
+			position: absolute;
+			top: -0.5 * $unit;
+			left: -0.5 * $unit;
+			right: -0.5 * $unit;
+			bottom: -0.5 * $unit;
+			border: 1px dashed $fg-darker;
+			z-index: -1;
+		}
+	}
+	&--minimized {
+		display: none;
+	}
+	&--maximized {
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	&--markdown,
+	&--image {
+		.window__content {
+			@extend %flexbox-row;
+			width: 800px;
+			max-height: 480px;
+		}
+	}
+	&--image {
+		.window__content {
+			width: 640px;
+			height: 480px;
+		}
+		.window__document {
+			position: relative;
+		}
+	}
+
+		&__thumbnails {
+//			position: absolute;
+//			bottom: 0;
+//			left: $unit;
+//			right: 0;
+//			background-color: rgba(0,0,0,0.3);
+//			z-index: 2;
+			a img {
+			}
+		}
+		&__thumbnail {
+			display: block;
+			background: none !important;
+
+			img {
+				max-width: 96px;
+				width: auto;
+				height: auto;
+			}
+		}
+
+		&__canvas {
+		}
+
+	&__sidebar {
+		@extend %flexbox-fixed;
+		@extend %scrollbar;
+		border-right: 1px solid $bg-lighter;
+		overflow: auto;
+	}
+	&__item {
+		display: block;
+		padding: 0.5*$unit $unit;
+
+		color: $fg;
+		background-color: transparent;
+		transition: background-color $time-fast;
+
+		&[header-level='2'] {
+			padding-left: 2 * $unit;
+		}
+		&[header-level='3'] {
+			padding-left: 3 * $unit;
+		}
+		&[header-level='4'] {
+			padding-left: 4 * $unit;
+		}
+		&[header-level='5'] {
+			padding-left: 5 * $unit;
+		}
+		&[header-level='6'] {
+			padding-left: 6 * $unit;
+		}
+
+		&:hover {
+			background-color: $bg-lighter;
+			color: $fg-lighter;
+		}
+	}
+	&__document {
+		@extend %flexbox-stretch;
+
+		.window--image & {
+			@extend %rulers;
+		}
+	}
+	&--markdown .window__document {
+		@extend %scrollbar;
+		@extend %markdown;
+		padding: $unit;
+		overflow: auto;
+	}
+
+	&__content {
+
+		@extend %opacity-on-drag;
+		@extend %scrollbar;
+		overflow: hidden;
+	}
+}
+
+.window,
+.taskbar {
+	&__header {
+		@extend %flexbox-row;
+		background-color: $bg-light;
+	}
+	&__title {
+		@extend %flexbox-stretch;
+		&:hover {
+			cursor: pointer;
+		}
+		padding: 0.5*$unit $unit;
+	}
+	&__controls {
+		@extend %flexbox-fixed;
+		white-space: nowrap;
+	}
+	&__control {
+		padding: 0.5*$unit 0;
+		display: inline-block;
+		width: 2 * $unit;
+		text-align: center;
+		transition: background-color $time-fast;
+		&:hover {
+			background-color: $bg-lightest;
+			cursor: pointer;
+			color: $fg-light;
+		}
+	}
+}
+
+hr.straight-line {
+	position: absolute;
+	border-top: 1px dashed $fg-dark;
+	transform-origin: top left;
+	transform-origin: top left;
+}

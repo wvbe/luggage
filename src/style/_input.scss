@@ -1,0 +1,81 @@
+@mixin has-terminal-line-structure () {
+	@extend %flexbox-row;
+	& > * {
+		//
+		padding: 0 $unit;
+	}
+	&__text {
+		@extend %flexbox-stretch;
+		flex-basis: 100%;
+	}
+	&__prefix {
+		@extend %flexbox-fixed;
+		padding-right: 0;
+	}
+	&__debug,
+	&__stack,
+	&__value {
+		@extend %flexbox-stretch;
+		flex-basis: 100%;
+	}
+}
+
+@keyframes blinker {
+	0% { background-color: transparent; }
+	25% { background-color: $fg; }
+	75% { background-color: $fg; }
+	100% { background-color: transparent; }
+}
+.input {
+
+	@include has-terminal-line-structure;
+	@extend %flexbox-fixed;
+	@extend %primary-box;
+	margin-top: 0.5*$unit;
+	padding: 0.5*$unit 0;
+	position: relative;
+	z-index: 100;
+
+
+
+	&__text {
+		position: relative; white-space: pre;
+	}
+	&__overlay {
+		position: absolute;
+		padding: 0 $unit;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		white-space: pre;
+	}
+	&__field {
+		position: fixed;
+		bottom: -1000px;
+		left: 0;
+		z-index: -1;
+		opacity: 0;
+		max-width:  0;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	&__cursor {
+		display: inline;
+		width: $unit;
+		&::before {
+			transition: background-color $time-fast;
+			content: ' ';
+		}
+		&--hidden::before { background-color: transparent; }
+		&--pinned::before { background-color: $fg; }
+		&--blinking::before {
+			animation-name: blinker;
+			animation-iteration-count: infinite;
+			animation-timing-function: linear;
+			animation-duration: $time-slow;}
+
+
+	}
+
+}

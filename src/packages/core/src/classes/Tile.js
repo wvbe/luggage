@@ -29,13 +29,13 @@ define([
 
 		MAX_TILE_REGENS = 9,
 
-		COLOR_UNDETERMINED_FILL = new Color({
-			hue: 0,
-			saturation: 0,
-			lightness: 1,
-			alpha: 0.2
-		}),
-
+//		COLOR_UNDETERMINED_FILL = new Color({
+//			hue: 0,
+//			saturation: 0,
+//			lightness: 0,
+//			alpha: 0.1
+//		}),
+		COLOR_UNDETERMINED_FILL = false,
 		COLOR_UNDETERMINED_STROKE = new Color({
 			hue: 0,
 			saturation: 0,
@@ -129,7 +129,7 @@ define([
 	};
 
 	Tile.prototype.getSurfaceCoordinates = function () {
-		return [this.x + 1, this.y, this.z];
+		return [this.x + 1, this.y, this.z < 0 ? 0 : this.z];
 	};
 
 	Tile.prototype.lock = function (registry) {
@@ -141,11 +141,7 @@ define([
 
 
 		var tileRelativeHeight = (this.z > MAX_TILE_Z ? MAX_TILE_Z : this.z) / MAX_TILE_Z;
-		var baseColor = new Color({
-			hue: 82,// + util.randomDeviation(1),
-			saturation: 0.5,// + util.randomDeviation(0.03),
-			lightness: 0.2 + 0.4 * Math.pow(tileRelativeHeight, 1.5) + util.randomDeviation(0.01)
-		}).lightenByRatio(0.3);
+		var baseColor = new Color('#1b1b1b');
 
 		if(this.isWater()) {
 			// Keep the default color
@@ -155,10 +151,11 @@ define([
 			// Tile color is a blend between regular and sandy tile color
 			this.fillColor = baseColor.blend(new Color({ // beach color
 					hue: 30,
-					saturation: 0.49,
-					lightness: 0.70
+					saturation: 0,
+					lightness: 0.13
 				}), beachNess).lightenByRatio(0.2);
 
+			//this.addArtifact(new ArtifactStones(this, beachNess));
 		} else if (this.z <= Z_GRASS_LEVEL) {
 			// Tile color is just the base color
 			this.fillColor = baseColor;
@@ -170,6 +167,8 @@ define([
 			this.fillColor = baseColor
 				.desaturateByRatio(levelOfBarrenness > 0.4 ? 1 : 0.6 + levelOfBarrenness)
 				.lightenByRatio(levelOfBarrenness > 0.5 ? 1 : levelOfBarrenness * 2);
+
+			//this.addArtifact(new ArtifactStones(this, 1 - levelOfBarrenness));
 		}
 
 		if(this.isWater())
@@ -180,7 +179,9 @@ define([
 			this.addArtifact(new ArtifactVegetation(this));
 			if(Math.random() < 0.1) {
 				this.addArtifact(new ArtifactHouse(this));
-				this.addArtifact(new ArtifactFence(this));
+				if(Math.random() < 0.3) {
+					this.addArtifact(new ArtifactFence(this));
+				}
 			}
 		}
 	};
@@ -205,14 +206,18 @@ define([
 				1,
 				1,
 				this.strokeColor,
-				this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
+				this.hovered
+					? (this.fillColor ? this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0) : COLOR_HOVERED_FILL.setAlpha(0.3))
+					: this.fillColor
 			);
 		} else {
 			if(RENDER_MODE_BOX === 'halo' || this.hovered)
 				renderer.fillTileHalo(
 					this,
 					this.strokeColor,
-					this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0),
+					this.hovered
+						? (this.fillColor ? this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0) : COLOR_HOVERED_FILL.setAlpha(0.3))
+						: this.fillColor,
 					0
 				);
 			else// if(RENDER_MODE_BOX === 'cube')
@@ -228,6 +233,7 @@ define([
 				);
 		}
 
+		// @TODO: Make rendering artifacts optional, possibly based on zoom level
 		this.artifacts.forEach(function (artifact) {
 			artifact.render(renderer, this);
 		}.bind(this));

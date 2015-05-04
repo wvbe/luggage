@@ -1,121 +1,86 @@
-$UNIT: 12px;
-$SPACING: 2 * $UNIT;
-$TILE_SIZE: 32px;
-$ISOMETRIC_VIEW_DIAMETER: 15;
-$time-short: 0.1s;
-$ISOMETRIC_Y_TO_X_OFFSET: 0.3; // For every n on the Y axis, displace n*OFFSET to the right
-$ISOMETRIC_Y_TO_X_RATIO: 0.6;  // n on the Y axis is always this ratio of (horizontal) units
-$ISOMETRIC_Z_TO_X_RATIO: 1; // n on the Z axis is always this ratio of (horizontal) units
+// Variables
+$spacing: 15px;
+$spacing-large: $spacing * 2;
+$spacing-huge: $spacing-large * 2;
 
-$tooltip-background: rgba(0,0,0,0.5);
+$time: 0.5s;
+$time-fast: $time / 2;
+$time-slow: $time * 2;
 
-html, body {
-	margin: 0;
-	padding: 0;
-}
-body {
-	font-family: 'Ubuntu', sans-serif;
-	font-size: $UNIT;
-}
+$fg: #8e8e8e;
+$fg-special: #fff;
+$fg-light: lighten($fg, 15);
+$fg-lighter: lighten($fg, 30);
+$fg-dark: #414141;
+$fg-darker: darken($fg-dark, 10);
 
-#viewport {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+$bg: #121211;
+$bg-semilight: #161615; // this is how css rgba(, 0.5) renders it
+$bg-light: #1b1b1b;
+$bg-lighter: #222222;
+$bg-lightest: lighten($bg-lighter, 10);
 
-	overflow: hidden;
+$bg-dark: darken($bg, 1);
+$bg-darker: darken($bg, 2);
 
-	> * {
-		position: absolute;
-		top: 0%;
-		left: 0%;
-		right: 0%;
-		bottom: 0%;
-		width: 100%;
-		height: 100%;
-	}
-}
+$font-family: 'Anonymous Pro', 'Courier New', monospace;
 
-#world,
-#player {
-	transition: top $time-short linear, left $time-short linear;
-}
 
-#backdrop {
-	transition: background-position 0.5s linear;
-	background: {
-		image: url('images/8LluB6D.GIF');
-		//color: rgb(37,180,210);
-		color: rgb(29,185,213);
-		position: 0px 0px;
-	}
-}
-#cursor {
-	position: absolute;
+ //
+ ///
+  ////
+//$unit: 1.1rem;
+$unit: 14px;
+  ////
+ ///
+ //
 
-}
-#world {
-	width: 100%;
-	height: 100%;
-}
+//$font-size: 0.8rem;
+$font-size: 13px;
 
-#tile-view {
-	position: absolute;
-	bottom: $SPACING;
-	right: $SPACING;
-	z-index: 9000;
-}
+$output-max-outer-width: 60 * $unit;
 
-.tooltip {
-	position: absolute;
-	z-index: 9000;
-	width: 200px;
-	transform: translateX(-50%);
-	margin-bottom: 32px;
+@import './game';
 
-	transition: bottom $time-short linear, left $time-short linear;
-	background-color: $tooltip-background;
-	border-radius: 4px;
-	color: #fff;
+// Placeholders, mixins
+@import './style/placeholders/box';
+@import './style/placeholders/rulers';
+@import './style/placeholders/script';
+@import './style/placeholders/scrollbar';
+@import './style/placeholders/flexbox';
+@import './style/placeholders/markdown';
 
-	text-align: center;
+// Reset, scaffolding
+@import './style/reset';
+@import './style/body';
 
-	&::after {
-		position: absolute;
-		margin-left: -10px;
-		top: 100%;
-		left: 50%;
-		display: block;
-		content: '';
-		width: 0;
-		height: 0;
-		border-style: solid;
-		border-width: 10px 10px 0 10px;
-		border-color: $tooltip-background transparent transparent transparent;
-	}
+// Different UI elements
+@import './style/player-banner'; // ###
+@import './style/taskbar';
+@import './style/flag';
+@import './style/input';
+@import './style/navigation';
+@import './style/input-explain';
+@import './style/output';
+@import './style/panvas';
+@import './style/sensors';
+@import './style/window';
 
-	&.language,
-	&.menu {
-		padding: $SPACING/2 0;
-	}
 
-	&__item {
-		padding: $SPACING/2;
-		display: block;
-		&:hover {
-			cursor: pointer;
-			background-color: #000;
-		}
-	}
+// The grand scheme of things:
+@import './style/layout';
+
+// Overrides
+@import './style/debug';
+
+
+// SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME
+
+.pull-left {
+	float: left;
+	margin-right: 4 * $unit !important;
 }
 
-#minimap {
-	position: absolute;
-	bottom: $SPACING;
-	right: $SPACING;
-	width: 240px;
-	height: 240px;
-	z-index: 9999;
-}
+
+
+// SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME SHAME

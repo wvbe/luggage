@@ -61,7 +61,7 @@ define([
 				return node.f;
 			});
 
-		if(end.isWater())
+		if(!end.isWalkable())
 			return [];
 
 		tileData(start).h = heuristic(start, end);

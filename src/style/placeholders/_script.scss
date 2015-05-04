@@ -1,0 +1,12 @@
+%primary-script {
+	font-family: $font-family;
+	color: $fg;
+	font-size: $font-size;
+	line-height: $unit;
+}
+%secondary-script {
+	color: $fg-dark;
+	font-size: 0.8 * $font-size;
+	line-height: $unit;
+	text-transform: uppercase;
+}

@@ -1,0 +1,7 @@
+.is-debug {
+	display: none;
+
+	.debug-mode & {
+		display: initial;
+	}
+}

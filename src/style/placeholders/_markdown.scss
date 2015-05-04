@@ -1,0 +1,46 @@
+%markdown {
+	padding: $unit;
+	h1 {
+		font-size: 2 * $font-size;
+	}
+	h2 {
+		font-size: 1.5 * $font-size;
+	}
+
+	h1, h2, h3, h4, p, ul, ol, pre {
+		margin-bottom: $unit;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	img {
+		display: block;
+		max-width: 80%;
+		height: auto;
+		margin: $unit auto;
+	}
+
+	ul, ol {
+		margin-left: 2 * $unit;
+	}
+
+	pre {
+		@extend %scrollbar;
+		background-color: $bg-light;
+		padding: $unit;
+		overflow-x: auto;
+	}
+	code {
+		background-color: $bg-light;
+	}
+
+	strong {
+		font-weight: bold;
+	}
+
+}
+
+.markdown {
+	@extend %markdown;
+}

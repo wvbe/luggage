@@ -1,0 +1,33 @@
+$ruler-size: 0.5 * $unit;
+
+%rulers {
+	position: relative;
+	padding-top: $ruler-size;
+	padding-left: $ruler-size;
+	&::before, &::after {
+		position: absolute;
+		display: block;
+		content: '';
+		z-index: 1000;
+	}
+	&::before {
+		height: $ruler-size;
+		background-image: url('images/ruler-horizontal.gif');
+		background-repeat: repeat-x;
+		top: 0;
+		left: $ruler-size;
+		right: 0;
+		border-bottom: 1px solid $fg-dark;
+		background-position: bottom left;
+	}
+	&::after {
+		width: $ruler-size;
+		background-image: url('images/ruler-vertical.gif');
+		background-repeat: repeat-y;
+		top: $ruler-size;
+		left: 0;
+		bottom: 0;
+		border-right: 1px solid $fg-dark;
+		background-position: top right;
+	}
+}

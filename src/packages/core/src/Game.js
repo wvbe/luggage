@@ -80,13 +80,14 @@ define([
 		// The canvas to render the world to, if you so please
 		this.renderer = new Renderer(this.perspective, document.getElementById('world'))
 			.onRender(this.world.renderTiles.bind(this.world));
+		this.entitiesRenderer = new Renderer(this.perspective, document.getElementById('entities'))
+			.onRender(this.world.renderEntities.bind(this.world));
 
 		this.tileRenderer = new Renderer(
 			new Perspective(document.getElementById('tile-view'), 128, 20),
 			document.getElementById('tile-view')
 		).onRender(function (renderer) {
 				var tile = this.player.tile;
-				console.log('Rendering tile-view', renderer);
 				renderer.panToTile(tile.x + 0.5, tile.y + 0.5, 3);
 				this.player.tile.render(renderer);
 			}.bind(this));
@@ -146,7 +147,6 @@ define([
 		// PlayerEntity thoughts make tooltips
 		this.player.on('thought', this.playerTooltip.bind(this));
 
-		console.log('Generating');
 		console.time('Generating');
 		// Generate the initial contents of the world, and iterate it 11 times
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, FOG_OF_WAR_DISTANCE));
@@ -163,6 +163,8 @@ define([
 
 			// Manage the surrounding terrain, progressing each tile between 9% and 14% towards completion
 			this.iterateTerrain(tile);
+
+			// Remove out-of-bounds entities
 			this.iterateEntities(tile);
 
 			// Look at the new player location
@@ -249,8 +251,12 @@ define([
 
 			var offset = getClickOffsetInParent(event, viewportElement),
 				tile = this.world.tileForCoordinates(
-				this.perspective.coordinatesForPixel(offset[0], offset[1], false)
-			);
+					this.perspective.coordinatesForPixel(offset[0], offset[1], false)
+				);
+
+			if(!tile)
+				return;
+
 			this.expressions.open(new ui.MenuTooltip(tile.getSurfaceCoordinates(), tile.getMenuItems(), MENU_TOOLTIP_OPTIONS));
 			this.worldTooltipRenderer.render();
 		}.bind(this));
@@ -289,6 +295,11 @@ define([
 		}
 
 		this.renderer
+			.panViewportToTile(tile.x, tile.y, 0)
+			.panToTile(tile.x, tile.y, 0)
+			.clear()
+			.render();
+		this.entitiesRenderer
 			.panViewportToTile(tile.x, tile.y, 0)
 			.panToTile(tile.x, tile.y, 0)
 			.clear()
@@ -367,6 +378,9 @@ define([
 			while (clickedElement !== clickableElement) {
 				clickedElement = clickedElement ? clickedElement.parentElement : event.target;
 
+				if (!clickedElement)
+					break;
+
 				var position = clickedElement.getBoundingClientRect();
 
 				clickOffsetX = clickOffsetX + position.left;
@@ -393,9 +407,10 @@ define([
 		});
 
 		entity.on('move', function () {
-			this.renderer.clear();
-			this.renderer.render();
+			this.entitiesRenderer.clear();
+			this.entitiesRenderer.render();
 		}.bind(this));
+
 		this.world.entities.push(entity);
 
 		entity.startRandomMoving(this.world);

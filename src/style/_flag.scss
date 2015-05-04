@@ -1,0 +1,24 @@
+.flag {
+	@extend %primary-box;
+	@extend %flexbox-row;
+	align-items: center;
+	&__logo {
+		@extend %flexbox-fixed;
+		height: 8 * $unit;
+		width: 8 * $unit;
+		background-image: url('images/x54-web.png');
+		background-position: center center;
+		background-size: 6 * $unit 6 * $unit;
+		background-repeat: no-repeat;
+	}
+	&__content {
+		@extend %flexbox-stretch;
+		padding: $unit;
+		> * {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
+
+}

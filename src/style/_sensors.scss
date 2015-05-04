@@ -1,0 +1,49 @@
+#sensors {
+	.banshee {
+		display: block;
+	}
+}
+
+.sensor {
+	@extend %flexbox-row;
+	align-items: center;
+	margin-top: $unit;
+	&:first-child {
+		margin-top: 0;
+	}
+	&__label {
+		@extend %flexbox-fixed;
+		@extend %secondary-script;
+		flex-basis: 6 * $unit;
+	}
+	&__canvas {
+		@extend %flexbox-stretch;
+	}
+	&--stopped {
+		.sensor__canvas {
+			position: relative;
+			text-align: center;
+			&::before {
+				display: block;
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 0;
+				right: 0;
+				border-top: 1px solid rgba(darkred, 0.4);
+				z-index: 1;
+			}
+			&::after {
+				content: 'Interrupted';
+				display: inline-block;
+				position: absolute;
+				top: 50%;
+				width: 6 * $unit;
+				margin-top: -0.5 * $unit;
+				margin-left: -3 * $unit;
+				background-color: $bg;
+				z-index: 2;
+			}
+		}
+	}
+}

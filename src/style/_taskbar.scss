@@ -1,0 +1,29 @@
+%active-control {
+	background-color: $bg-lighter;
+}
+.taskbar {
+	@extend %primary-box;
+	position: relative;
+	&:empty {
+		display: none;
+	}
+	&::before {
+		@extend %secondary-script;
+		content: 'Active windows';
+		position: absolute;
+		top: -$unit;
+	}
+}
+.taskbar,
+.window {
+	&--minimized {
+		.taskbar__minimize {
+			@extend %active-control;
+		}
+	}
+	&--mediumized {
+		.taskbar__mediumize {
+			@extend %active-control;
+		}
+	}
+}

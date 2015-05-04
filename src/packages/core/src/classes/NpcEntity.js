@@ -15,7 +15,7 @@ define([
 		Entity.call(this, tile, options);
 
 		this.options = {
-			moveInterval: 100
+			moveInterval: 500
 		};
 
 		this.properties = properties;
@@ -24,7 +24,7 @@ define([
 
 		// Some presentation stuffs
 		this.fillColor = new Color([0,0,0]);
-		this.strokeColor = new Color([255,255,255]);
+		this.strokeColor = new Color('crimson');
 	}
 
 	NpcEntity.prototype = Object.create(Entity.prototype);
@@ -41,7 +41,7 @@ define([
 	};
 
 	NpcEntity.prototype.makeRandomMove = function (world, whenDone) {
-		var withinRange = world.getTilesWithinRanges(this.tile, [7, 3])[0].filter(function (tile) {
+		var withinRange = world.getTilesWithinRanges(this.tile, [3, 1])[0].filter(function (tile) {
 				return tile.isWalkable();
 			}),
 			randomWithinRange = util.randomFromArray(withinRange);

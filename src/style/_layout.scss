@@ -1,0 +1,32 @@
+%is-padded-layout-section {
+	padding: 0.5 * $unit;
+	box-sizing: border-box;
+}
+
+.site {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	@extend %is-padded-layout-section;
+	@extend %flexbox-row;
+	> .content {
+		@extend %is-padded-layout-section;
+		@extend %flexbox-stretch;
+		position: relative;
+		> .stick-to-bottom {
+			@extend %invisible-scrollbar;
+			position: absolute;
+			top: 0.5 * $unit;
+			bottom: 0.5 * $unit;
+			left: 0.5 * $unit;
+			right: 0.5 * $unit;
+			overflow-y: scroll;
+		}
+	}
+	> .banner {
+		@extend %is-padded-layout-section;
+		@extend %flexbox-fixed;
+	}
+}

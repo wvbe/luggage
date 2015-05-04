@@ -1,0 +1,16 @@
+.input-explain {
+	&__suggestion,
+	&__suggestions {
+		color: $fg-dark;
+		background-color: transparent;
+	}
+	&__suggestion {
+		&:hover {
+			background-color: $bg-lighter;
+			color: $fg;
+		}
+	}
+	&__suggestions {
+		padding-left: $unit;
+	}
+}

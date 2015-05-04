@@ -1,0 +1,51 @@
+.output {
+	@extend %flexbox-stretch;
+	@extend %flexbox-column;
+	flex-direction: column;
+	flex-shrink: 0;
+	white-space: pre-wrap;
+	&-item {
+		@include has-terminal-line-structure;
+		max-width: $output-max-outer-width;
+		position: relative;
+		top: 0;
+		opacity: 1;
+		transition: all $time-fast;
+		transition: all $time-fast;
+		/* VARIATIONS */
+		&--error {
+			color: mix($fg, darkred, 30);
+			.debug-mode & {
+				background-color: rgba(darkred, 0.15);
+			}
+		}
+		&--debug {
+			color: mix($fg, deepskyblue, 75);
+			.debug-mode & {
+				background-color: rgba(lightskyblue, 0.15);
+			}
+		}
+		&--input {
+			@extend %primary-box;
+			color: $fg-light;
+		}
+
+		&--key-value {
+			.output-item__text {
+				@extend %flexbox-fixed;
+				@extend %secondary-script;
+				flex-basis: 5 * $unit;
+			}
+		}
+
+		/* COMPONENTS */
+		&__spinner {
+			@extend %secondary-script;
+			white-space: nowrap;
+			text-align: right;
+		}
+		&__prefix {
+			@extend %secondary-script;
+		}
+	}
+}

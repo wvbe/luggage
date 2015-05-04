@@ -1,0 +1,35 @@
+.navigation {
+	@extend %flexbox-row;
+	@extend %primary-box;
+	align-items: center;
+	margin-top: $unit;
+	&__item {
+		background: transparent;
+		@extend %flexbox-fixed;
+		justify-content: center;
+		padding: 0.5*$unit $unit;
+		display: inline-block;
+		color: $fg;
+		position: relative;
+		margin-left: 1px;
+		&::before {
+			display: block;
+			content: '';
+			height: 50%;
+			position: absolute;
+			top: 25%;
+			left: -1px;
+			border-left: 1px solid $fg-darker;
+		}
+		&:first-child {
+			margin-left: 0px;
+			&::before {
+				display: none;
+			}
+		}
+		&:hover {
+			background-color: $bg-lighter;
+			color: $fg-lighter;
+		}
+	}
+}
