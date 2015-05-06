@@ -41,6 +41,13 @@ $font-size: 13px;
 $output-max-outer-width: 60 * $unit;
 
 @import './game';
+@import './style/tooltip';
+@import './style/player-banner';
+
+
+/*
+	LEGACY:
+*/
 
 // Placeholders, mixins
 @import './style/placeholders/box';
@@ -55,11 +62,9 @@ $output-max-outer-width: 60 * $unit;
 @import './style/body';
 
 // Different UI elements
-@import './style/player-banner'; // ###
 @import './style/taskbar';
 @import './style/flag';
 @import './style/input';
-@import './style/navigation';
 @import './style/input-explain';
 @import './style/output';
 @import './style/panvas';

@@ -178,6 +178,8 @@ define([
 		console.time('Generating');
 		// Generate the initial contents of the world, and iterate it 11 times
 		this.world.generateTilesOnPositions(this.world.getPotentialTilesAroundPosition(this.player.tile, FOG_OF_WAR_DISTANCE));
+
+
 		for(var i = 0, center = this.player.tile; i < INITIAL_TERRAIN_ITERATIONS; ++i)
 			this.iterateTerrain(center);
 		console.timeEnd('Generating');
@@ -216,6 +218,7 @@ define([
 		}.bind(this));
 
 		this.player.on('error', function (err) {
+			console.error(err.message);
 			this.playerTooltip(err.message);
 		}.bind(this));
 

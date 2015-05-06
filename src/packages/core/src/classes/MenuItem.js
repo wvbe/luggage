@@ -20,7 +20,7 @@ define([
 		var element = document.createElement('a');
 		element.appendChild(document.createTextNode(this.label));
 
-		element.addEventListener('mousedown', function () {
+		element.addEventListener('mouseup', function () {
 			this.execute();
 		}.bind(this));
 

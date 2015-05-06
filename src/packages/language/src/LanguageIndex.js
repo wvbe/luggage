@@ -22,8 +22,10 @@ define([
 		if(namespace && this[namespace])
 			return this[namespace].get();
 
-		if(!this._array)
-			throw new Error('NO_LANGUAGE_DATA');
+		if(!this._array) {
+			console.trace('Untranslated error message "' + namespace + '"');
+			return namespace;
+		}
 
 		return util.randomFromArray(this._array);
 	};

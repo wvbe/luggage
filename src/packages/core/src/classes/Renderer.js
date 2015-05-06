@@ -253,7 +253,7 @@ define([
 			1,
 			1,
 			tile.z,
-			strokeColor || tile.strokeColor,
+			strokeColor,
 			fillColor,
 			haloOffset
 		);
@@ -357,8 +357,8 @@ define([
 	 */
 	Renderer.prototype.fillBox = function (x, y, z, width, length, height, strokeColor, fillColor) {
 		return this
-			.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor.darkenByRatio(0.1))
-			.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor.darkenByRatio(0.2))
+			.fillEastToWestPlane(x, y, z, width, height, strokeColor, fillColor ? fillColor.darkenByRatio(0.1) : fillColor)
+			.fillNorthToSouthPlane(x + width, y, z, length, height, strokeColor, fillColor ? fillColor.darkenByRatio(0.2) : fillColor)
 			.fillFlatPlane(x, y, z + height, width, length, strokeColor, fillColor);
 	};
 

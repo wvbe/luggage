@@ -40,11 +40,11 @@ define([
 			hue: 0,
 			saturation: 0,
 			lightness: 0.3,
-			alpha: 0.3
+			alpha: 0.1
 		}),
 
 		COLOR_HOVERED_FILL = new Color('yellow'),
-		RENDER_MODE_BOX = 'halo';
+		RENDER_MODE_BOX = 'cube';
 
 	function getIdForCoordinates (x, y) {
 		return x + ',' + y;
@@ -137,7 +137,6 @@ define([
 	};
 
 	Tile.prototype.lock = function (registry) {
-
 		if(!this.canStillBeChanged())
 			return;
 
@@ -214,6 +213,9 @@ define([
 	};
 
 	Tile.prototype.render = function (renderer) {
+		if(this.canStillBeChanged())
+			return;
+
 		if(this.isWater()) {
 			renderer.fillFlatPlane (
 				this.x,
@@ -227,13 +229,14 @@ define([
 					: this.fillColor
 			);
 		} else {
-			if(RENDER_MODE_BOX === 'halo' || this.hovered)
+			var fillColor = this.hovered
+				? (this.fillColor ? this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0) : COLOR_HOVERED_FILL.setAlpha(0.3))
+				: this.fillColor;
+			if(RENDER_MODE_BOX === 'halo' && !this.hovered)
 				renderer.fillTileHalo(
 					this,
-					this.strokeColor,
-					this.hovered
-						? (this.fillColor ? this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0) : COLOR_HOVERED_FILL.setAlpha(0.3))
-						: this.fillColor,
+					null,//this.strokeColor,
+					fillColor,
 					0
 				);
 			else// if(RENDER_MODE_BOX === 'cube')
@@ -244,8 +247,8 @@ define([
 					1,
 					1,
 					this.z,
-					this.strokeColor,
-					this.fillColor.blend(COLOR_HOVERED_FILL, this.hovered ? 0.5 : 0)
+					null,//this.strokeColor,
+					fillColor
 				);
 		}
 
