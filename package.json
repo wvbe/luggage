@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "color-js": "^1.0.3",
     "glamor": "^2.20.12",
     "messageformat": "^1.0.2",
     "react": "^15.4.1",
@@ -15,7 +16,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom test/*.test.js --verbose",
+    "test": "react-scripts test --env=jsdom src/**/*.test.js --verbose",
     "eject": "react-scripts eject"
   },
   "jest": {

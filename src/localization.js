@@ -1,8 +1,7 @@
 import MessageFormat from 'messageformat';
 
 const englishLanguage = {
-
-
+	testMessage: 'This is a {testMessage}'
 };
 
 const language = {
@@ -11,23 +10,26 @@ const language = {
 	defaultLocale = 'en',
 	messageFormat = new MessageFormat('en'),
 	wasAlreadyWarnedForMissingMessageKey = {},
-	translations = Object.keys(language)
-		.reduce((translations, locale) => {
+	translations = Object.keys(language).reduce(
+		(translations, locale) => {
 			const localLanguage = language[locale];
 
-			translations[locale] = Object.keys(localLanguage)
-				.reduce((localTranslations, messageKey) => {
-					localTranslations[messageKey] = messageFormat.compile(localLanguage[messageKey]);
-					return localTranslations;
-				}, {});
-
-			return translations;
-		});
+			return Object.assign(
+				translations,
+				{
+					[locale]: Object.keys(language[locale]).reduce(
+						(localTranslations, messageKey) => Object.assign(localTranslations, {
+							[messageKey]: messageFormat.compile(localLanguage[messageKey])
+						}),
+						{})
+				})
+		},
+		{});
 
 export function translate (messageKey, args) {
 	let translator = null;
 
-	if (!translations[messageKey]) {
+	if (!translations[defaultLocale][messageKey]) {
 		// Warn only once
 		if (!wasAlreadyWarnedForMissingMessageKey[messageKey]) {
 			console.warn(`Localization key "${messageKey}" is not in localization.js`);

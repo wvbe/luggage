@@ -6,10 +6,9 @@ const viewportStyle = styles.merge(
 	styles.absoluteCentered
 );
 
-const Viewport = () => {
+const Viewport = ({ children }) => {
 	return (
-		<luggage-viewport { ...viewportStyle }>
-		</luggage-viewport>
+		<luggage-viewport { ...viewportStyle }>{ children }</luggage-viewport>
 	);
 };
 
