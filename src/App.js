@@ -29,8 +29,7 @@ export default class App extends Component {
 			<Viewport>
 				<Terrain
 					perspective={ this.perspective }
-					size={ [10, 10, 0] }
-					resolution={ 0.5 } />
+					size={ [50, 50, 9] } />
 			</Viewport>
 		</luggage-root>;
 	}
