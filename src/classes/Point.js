@@ -15,6 +15,9 @@ export default class Point {
 	map (cb) {
 		return [this[0], this[1], this[2]].map(cb);
 	}
+	forEach (cb) {
+		return [this[0], this[1], this[2]].forEach(cb);
+	}
 	subtract (point) {
 		return this.map((val, i) => val - point[i]);
 	}

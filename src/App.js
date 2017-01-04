@@ -7,6 +7,7 @@ import Perspective from './classes/Perspective';
 import Viewport from './components/Viewport';
 import Terrain from './components/Terrain';
 import Container from './components/Container';
+import Isabella from './components/prefabs/Isabella';
 import Cube from './components/Cube';
 
 const rootStyle = styles.merge(
@@ -21,15 +22,22 @@ export default class App extends Component {
 	constructor () {
 		super();
 
-		this.perspective = new Perspective(30, 24);
+		this.perspective = new Perspective(30, 12);
 	}
 
 	render () {
 		return <luggage-root { ...rootStyle }>
 			<Viewport>
-				<Terrain
+				<Container
 					perspective={ this.perspective }
-					size={ [50, 50, 9] } />
+					position={ [0, 0, -60] }>
+					<Terrain
+						perspective={ this.perspective }
+						size={ [100, 100, 0.5] }
+						smoothing={ 0 } />
+				</Container>
+				<Cube perspective={ this.perspective } position={ [1, 0, 0] } color='blue' />
+				<Cube perspective={ this.perspective } position={ [0, 0, 0] } color='red' />
 			</Viewport>
 		</luggage-root>;
 	}

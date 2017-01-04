@@ -69,7 +69,7 @@ const Cube = ({ perspective, color, position = [0, 0, 0], size = [1, 1, 1] }) =>
 	lines.push(<polygon
 		key={ 'perimeter' }
 		points={ perimeterCoordinates.map(coordinates => coordinates.map((c, i) => c - boundingBox.offset[i]).join(',')).join(' ') }
-		style={{ stroke: styles.color('black'), strokeWidth: 2, fill: 'transparent' }} />);
+		style={{ stroke: styles.color('black'), strokeWidth: 0.5, fill: 'transparent' }} />);
 
 	const style = styles.merge({
 		position: 'absolute',

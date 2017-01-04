@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 import Point from '../classes/Point';
 import Container from './Container';
@@ -26,89 +26,105 @@ function getAdjacentForPoint (points, point) {
 		.filter(point => !!point);
 }
 
-const Terrain = ({ perspective, size = [10, 10, 1] }) => {
-	const coordinates = [];
+class Terrain extends Component {
 
-	for (let y = 0; y < size[1]; ++y) {
-		const row = [];
-		for(let x = 0; x < size[0]; ++x) {
-			row.push(new Point(x, y, size[2] * Math.random()));
-		}
-		coordinates.push(row);
+	componentDidMount () {
+		this.iterations = 0;
+		setInterval(() => {
+			++this.iterations;
+			this.forceUpdate();
+		}, 10);
 	}
+	render () {
+		const perspective = this.props.perspective,
+			size = this.props.size,
+			smoothing = this.props.smoothing;
 
-	let lines = {};
-	coordinates.forEach(row => row.forEach(a => getAdjacentForPoint(coordinates, a).forEach(b => {
-		const key = [a[0] + ',' + a[1], b[0] + ',' + b[1]].sort().join('x');
+		let coordinates = [];
 
-		if(lines[key])
-			return;
+		for (let y = 0; y < size[1]; ++y) {
+			const row = [];
+			for(let x = 0; x < size[0]; ++x) {
+				const pixels = new Point(x, y, size[2] * (Math.cos(x + this.iterations) + Math.sin(y + this.iterations)));
 
-		lines[key] = {
-			start: a,
-			end: b
+				row.push(pixels);
+			}
+			coordinates.push(row);
+		}
+
+		// Smoothing iterations
+		for(let z = 0; z < smoothing; ++z) {
+			coordinates.reduce((points, row) => points.concat(row), [])
+				.forEach(point => {
+					const adjacent = getAdjacentForPoint(coordinates, point),
+						averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
+
+					point[2] = 0.5 * point[2] + 0.5 * averageZ;
+				});
+		}
+
+		const translate = [0, 0, 0];
+		const boundingBox = {
+			min: [0, 0],
+			max: [0, 0]
 		};
-	})));
 
-	coordinates.reduce((points, row) => points.concat(row), []).forEach(point => {
-		const adjacent = getAdjacentForPoint(coordinates, point),
-			averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
 
-		point[2] = 0.05* point[2] + 0.95 * averageZ;
-	});
-	coordinates.reduce((points, row) => points.concat(row), []).forEach(point => {
-		const adjacent = getAdjacentForPoint(coordinates, point),
-			averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
+		coordinates = coordinates.map((row, y) => row.map((coordinate, x) => {
+			coordinate.forEach((c, i) => {
+				if (c > translate[i])
+					translate[i] = c;
+			});
 
-		point[2] = 0.05* point[2] + 0.95 * averageZ;
-	});
-	coordinates.reduce((points, row) => points.concat(row), []).forEach(point => {
-		const adjacent = getAdjacentForPoint(coordinates, point),
-			averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
+			const pixels = perspective.toPixels(coordinate);
+			pixels.forEach((p, i) => {
+				if (p < boundingBox.min[i])
+					boundingBox.min[i] = p;
 
-		point[2] = 0.05* point[2] + 0.95 * averageZ;
-	});
-	coordinates.reduce((points, row) => points.concat(row), []).forEach(point => {
-		const adjacent = getAdjacentForPoint(coordinates, point),
-			averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
+				if (p > boundingBox.max[i])
+					boundingBox.max[i] = p;
+			});
 
-		point[2] = 0.05* point[2] + 0.95 * averageZ;
-	});
-	coordinates.reduce((points, row) => points.concat(row), []).forEach(point => {
-		const adjacent = getAdjacentForPoint(coordinates, point),
-			averageZ = adjacent.reduce((total, adjac) => total + adjac[2], 0) / adjacent.length;
+			return pixels;
+		}));
 
-		point[2] = 0.05* point[2] + 0.95 * averageZ;
-	});
-	return (
-		<Container perspective={ perspective }>
-			{ Object.keys(lines).map((key, i) => {
-				const line = lines[key],
-					size = perspective.toPixels(line.end.subtract(line.start)),
-					start = perspective.toPixels(line.start),
-					offset = [
-						Math.min(size[0], 0),
-						Math.min(size[1], 0)
-					];
 
-				return <svg
-					key={ i }
-					viewBox={ [0, 0].concat(size.map(x => Math.abs(x))).join(' ') }
-					width={ Math.abs(size[0]) }
-					height={ Math.abs(size[1]) }
-					style={ styles.absolute(start[0] + offset[0] + 5, start[1] + offset[1] + 5) }>
-					<line
-						x1={ 0 - offset[0] }
-						y1={ 0 - offset[1] }
-						x2={ size[0] - offset[0] }
-						y2={ size[1] - offset[1] }
-						data-offset={ offset }
-						strokeWidth="0.4"
-						stroke="black"/>
-				</svg>;
-			}) }
-		</Container>
-	);
-};
+		const dimensions = [
+			boundingBox.max[0] - boundingBox.min[0],
+			boundingBox.max[1] - boundingBox.min[1]
+		];
+
+		const gridStyle = {
+			fill: 'transparent',
+			stroke: 'black',
+			strokeWidth: 0.3
+		};
+
+		const lines = [];
+		for(let y = 0; y < coordinates.length; ++y) {
+			lines.push(<polyline
+				key={ 'ew-' + y }
+				style={ gridStyle}
+				points={ coordinates[y].map((c, y) => c.map((cc, i) => cc - boundingBox.min[i]).join(',')).join(' ') } />);
+		}
+		for(let x = 0; x < coordinates[0].length; ++x) {
+			lines.push(<polyline
+				key={ 'ns-' + x }
+				style={ gridStyle}
+				points={ coordinates.map((c, y) => c[x].map((cc, i) => cc - boundingBox.min[i]).join(',')).join(' ') } />);
+		}
+
+		const translateInPixels = perspective.toPixels(translate);
+		return <svg
+				style={{ position: 'absolute', top: boundingBox.min[1], left: boundingBox.min[0] }}
+				viewBox={ [0, 0].concat(dimensions).join(' ') }
+				width={ dimensions[0] }
+				height={ dimensions[1] }>
+			{ lines }
+		</svg>;
+
+
+	}
+}
 
 export default Terrain;
